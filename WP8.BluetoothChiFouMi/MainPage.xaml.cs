@@ -7,35 +7,39 @@ using System.Windows.Controls;
 using System.Windows.Navigation;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
+using System.Collections.ObjectModel;
+using Windows.Networking.Sockets;
+using Windows.Networking.Proximity;
 using WP8.BluetoothChiFouMi.Resources;
+using Windows.Storage.Streams;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Microsoft.Phone.Tasks;
 
 namespace WP8.BluetoothChiFouMi
 {
     public partial class MainPage : PhoneApplicationPage
     {
-        // Constructeur
+        // Constructor
         public MainPage()
         {
             InitializeComponent();
 
-            // Exemple de code pour la localisation d'ApplicationBar
-            //BuildLocalizedApplicationBar();
+            SystemTray.SetProgressIndicator(this, new ProgressIndicator());
+            this.DataContext = App.UserPseudo;
         }
 
-        // Exemple de code pour la conception d'une ApplicationBar localisée
-        //private void BuildLocalizedApplicationBar()
-        //{
-        //    // Définit l'ApplicationBar de la page sur une nouvelle instance d'ApplicationBar.
-        //    ApplicationBar = new ApplicationBar();
+        protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
+        {
+            
+            base.OnNavigatedTo(e);
+        }
 
-        //    // Crée un bouton et définit la valeur du texte sur la chaîne localisée issue d'AppResources.
-        //    ApplicationBarIconButton appBarButton = new ApplicationBarIconButton(new Uri("/Assets/AppBar/appbar.add.rest.png", UriKind.Relative));
-        //    appBarButton.Text = AppResources.AppBarButtonText;
-        //    ApplicationBar.Buttons.Add(appBarButton);
+        protected override void OnNavigatingFrom(System.Windows.Navigation.NavigatingCancelEventArgs e)
+        {
+            
+            base.OnNavigatingFrom(e);
+        }
 
-        //    // Crée un nouvel élément de menu avec la chaîne localisée d'AppResources.
-        //    ApplicationBarMenuItem appBarMenuItem = new ApplicationBarMenuItem(AppResources.AppBarMenuItemText);
-        //    ApplicationBar.MenuItems.Add(appBarMenuItem);
-        //}
     }
 }

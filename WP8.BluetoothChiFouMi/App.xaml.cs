@@ -7,6 +7,7 @@ using System.Windows.Navigation;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 using WP8.BluetoothChiFouMi.Resources;
+using System.IO.IsolatedStorage;
 
 namespace WP8.BluetoothChiFouMi
 {
@@ -17,6 +18,29 @@ namespace WP8.BluetoothChiFouMi
         /// </summary>
         /// <returns>Frame racine de l'application téléphonique.</returns>
         public static PhoneApplicationFrame RootFrame { get; private set; }
+
+        /// <summary>
+        /// Pseudo actuel de l'utilisateur
+        /// </summary>
+        public static string UserPseudo
+        {
+            get
+            {
+                if (IsolatedStorageSettings.ApplicationSettings.Contains("UserPseudo"))
+                {
+                    return IsolatedStorageSettings.ApplicationSettings["UserPseudo"].ToString();
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+            set
+            {
+                IsolatedStorageSettings.ApplicationSettings["UserPseudo"] = value;
+                IsolatedStorageSettings.ApplicationSettings.Save();
+            }
+        }
 
         /// <summary>
         /// Constructeur pour l'objet Application.
