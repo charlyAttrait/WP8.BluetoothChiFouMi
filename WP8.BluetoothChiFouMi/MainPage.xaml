@@ -7,13 +7,14 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="clr-namespace:WP8.BluetoothChiFouMi.ViewModels"
+    xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     mc:Ignorable="d"
     FontFamily="{StaticResource PhoneFontFamilyNormal}"
     FontSize="{StaticResource PhoneFontSizeNormal}"
     Foreground="{StaticResource PhoneForegroundBrush}"
     SupportedOrientations="Portrait"  Orientation="Portrait"
     shell:SystemTray.IsVisible="True">
-
+    
     <phone:PhoneApplicationPage.DataContext>
         <model:ViewModelMainPage/>
     </phone:PhoneApplicationPage.DataContext>
@@ -21,9 +22,18 @@
     <!--LayoutRoot est la grille racine où tout le contenu de la page est placé-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
         <!--Contrôle Pivot-->
-        <phone:Pivot Title="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.ApplicationTitle}">
+        <phone:Pivot x:Name="PIVOT" Title="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.ApplicationTitle}">
             <!--PAGE D'ACCUEIL (pseudo + bluetooth connection)-->
-            <phone:PivotItem Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.WelcomePageName}">
+            <phone:PivotItem x:Name="ITEM_WELCOME" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.WelcomePageName}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Loaded" >
+                        <i:InvokeCommandAction Command="{Binding onNavigateTo}" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="UnLoaded" >
+                        <i:InvokeCommandAction Command="{Binding onNavigateFrom}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -34,10 +44,10 @@
                     </Grid.RowDefinitions>
                     <StackPanel Grid.Row="0">
                         <TextBlock Text="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.UserPseudoText}"/>
-                        <TextBox x:Name="TXTBOX_PSEUDO" Text="{Binding Path=UserPseudo, Mode=TwoWay}"/>
+                        <TextBox x:Name="TXTBOX_PSEUDO" Text="{Binding Path=UserPseudo, Mode=TwoWay}" />
                     </StackPanel>
                     <Button x:Name="BT_FIND_PEERS" Grid.Row="1" Content="{Binding Path=LocalizedResources.FindButtonCaption, Source={StaticResource LocalizedStrings}}" 
-                            Command="{Binding refreshPeersCommand}" Margin="10,0,0,0"/>
+                            Command="{Binding refreshDevicesCommand}" Margin="10,0,0,0"/>
                     <TextBlock x:Name="TXT_PEER" Grid.Row="2" Margin="25,0,0,0" Text="{Binding TXT_PEER_Text, Mode=TwoWay}"/>
                     <ListBox x:Name="LIST_PEERS" Grid.Row="3" Grid.ColumnSpan="2" Margin="10,10,0,10" DataContext="{Binding LIST_PEERS, Mode=TwoWay}">
                         <ListBox.ItemTemplate>
@@ -47,18 +57,26 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
                     <Button x:Name="BT_CONNECT" Grid.Row="4" Content="{Binding Path=LocalizedResources.ConnectButtonCaption, Source={StaticResource LocalizedStrings}}" 
-                            Command="{Binding connectToDeviceCommand}" Margin="10,0,0,0" VerticalAlignment="Bottom"/>
+                            Command="{Binding connectToDeviceCommand}" Margin="10,0,0,0" VerticalAlignment="Bottom" 
+                            IsEnabled="{Binding isConnectionPossible, Mode=TwoWay}"/>
                 </Grid>
             </phone:PivotItem>
 
             <!--PAGE DE JEU-->
-            <phone:PivotItem Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.GamePageName}">
+            <phone:PivotItem x:Name="ITEM_GAME" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.GamePageName}">
                 <Grid/>
             </phone:PivotItem>
 
             <!--PAGE DES SCORES-->
-            <phone:PivotItem Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.RecordsPageName}">
-                <Grid/>
+            <phone:PivotItem x:Name="ITEM_RECORDS" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.RecordsPageName}">
+                <Grid ShowGridLines="True">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="35*"/>
+                        <ColumnDefinition Width="15*"/>
+                        <ColumnDefinition Width="15*"/>
+                        <ColumnDefinition Width="35*"/>
+                    </Grid.ColumnDefinitions>
+                </Grid>
             </phone:PivotItem>
         </phone:Pivot>
     </Grid>

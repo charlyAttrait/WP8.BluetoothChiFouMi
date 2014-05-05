@@ -149,17 +149,11 @@
   <data name="Err_NoConnectTitle" xml:space="preserve">
     <value>Can't connect</value>
   </data>
-  <data name="Err_NoMessageToSend" xml:space="preserve">
-    <value>Please enter a message to send.</value>
-  </data>
   <data name="Err_NoPeer" xml:space="preserve">
     <value>You must select a peer from the list.</value>
   </data>
   <data name="Err_NoPeerConnected" xml:space="preserve">
     <value>You are not connected to a Peer.</value>
-  </data>
-  <data name="Err_NoSendTitle" xml:space="preserve">
-    <value>Can't send</value>
   </data>
   <data name="Err_NotAdvertising" xml:space="preserve">
     <value>You are currently not advertising yourself, i.e., a call to PeerFinder.Start() must proceed FindAllPeersAsync()</value>

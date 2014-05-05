@@ -133,15 +133,6 @@ namespace WP8.BluetoothChiFouMi.Resources {
         }
         
         /// <summary>
-        ///   Recherche une chaîne localisée semblable à Please enter a message to send..
-        /// </summary>
-        public static string Err_NoMessageToSend {
-            get {
-                return ResourceManager.GetString("Err_NoMessageToSend", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Recherche une chaîne localisée semblable à You must select a peer from the list..
         /// </summary>
         public static string Err_NoPeer {
@@ -156,15 +147,6 @@ namespace WP8.BluetoothChiFouMi.Resources {
         public static string Err_NoPeerConnected {
             get {
                 return ResourceManager.GetString("Err_NoPeerConnected", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Recherche une chaîne localisée semblable à Can&apos;t send.
-        /// </summary>
-        public static string Err_NoSendTitle {
-            get {
-                return ResourceManager.GetString("Err_NoSendTitle", resourceCulture);
             }
         }
         

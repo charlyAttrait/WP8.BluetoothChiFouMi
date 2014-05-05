@@ -19,8 +19,10 @@ namespace WP8.BluetoothChiFouMi.ViewModels
     {
         #region Fields
 
-        private DelegateCommand _refreshPeersCommand;
+        private DelegateCommand _refreshDevicesCommand;
         private DelegateCommand _connectToDeviceCommand;
+        private DelegateCommand _onNavigateTo;
+        private DelegateCommand _onNavigateFrom;
 
         ObservableCollection<PeerAppInfo> _peerApps;    // A local copy of peer app information
         StreamSocket _socket;                           // The socket object used to communicate with a peer
@@ -33,19 +35,41 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
         private ListBox _LIST_PEERS;
         private string _TXT_PEER_Text;
+        private Boolean _isConnectionPossible;
 
         #endregion
 
         #region Properties
 
-        public DelegateCommand refreshPeersCommand
+        public DelegateCommand refreshDevicesCommand
         {
-            get { return _refreshPeersCommand; }
+            get { return _refreshDevicesCommand; }
         }
-
         public DelegateCommand connectToDeviceCommand
         {
             get { return _connectToDeviceCommand; }
+        }
+        public DelegateCommand onNavigateTo
+        {
+            get { return _onNavigateTo; }
+        }
+
+        public DelegateCommand onNavigateFrom
+        {
+            get { return _onNavigateFrom; }
+        }
+
+        public string UserPseudo
+        {
+            get { return App.UserPseudo; }
+            set
+            {
+                if (value != App.UserPseudo)
+                {
+                    App.UserPseudo = value;
+                    onPropertyChanged();
+                }
+            }
         }
 
         public ListBox LIST_PEERS
@@ -56,6 +80,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 if (_LIST_PEERS != value)
                 {
                     _LIST_PEERS = value;
+                    LIST_PEERS.SelectionChanged += LIST_PEERS_SelectionChanged;
                     onPropertyChanged();
                 }
             }
@@ -72,6 +97,18 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 }
             }
         }
+        public Boolean isConnectionPossible
+        {
+            get { return _isConnectionPossible; }
+            set
+            {
+                if (_isConnectionPossible != value)
+                {
+                    _isConnectionPossible = value;
+                    onPropertyChanged();
+                }
+            }
+        }
 
         #endregion
 
@@ -79,15 +116,20 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
         public ViewModelMainPage()
         {
-            _refreshPeersCommand = new DelegateCommand(ExecuteRefreshPeersCommand);
+            isConnectionPossible = false;
+
+            _refreshDevicesCommand = new DelegateCommand(ExecuteRefreshDevicesCommand);
             _connectToDeviceCommand = new DelegateCommand(ExecuteConnectToDeviceCommand);
+
+            _onNavigateTo = new DelegateCommand(OnNavigatedTo);
+            _onNavigateFrom = new DelegateCommand(OnNavigatingFrom);
         }
 
         #endregion
 
         #region Methods
 
-        private void ExecuteRefreshPeersCommand(object parameter)
+        private void ExecuteRefreshDevicesCommand(object parameter)
         {
             RefreshPeerAppList();
         }
@@ -108,7 +150,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         }
 
 
-        public void OnNavigatedTo()
+        public void OnNavigatedTo(object parameter)
         {
             // Maintain a list of peers and bind that list to the UI
             _peerApps = new ObservableCollection<PeerAppInfo>();
@@ -124,12 +166,24 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             RefreshPeerAppList();
         }
 
-        public void OnNavigatingFrom()
+        public void OnNavigatingFrom(object parameter)
         {
             PeerFinder.ConnectionRequested -= PeerFinder_ConnectionRequested;
 
             // Cleanup before we leave
             CloseConnection(false);
+        }
+
+        void LIST_PEERS_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count != 0)
+            {
+                isConnectionPossible = true;
+            }
+            else
+            {
+                isConnectionPossible = false;
+            }
         }
 
         public void PeerFinder_ConnectionRequested(object sender, ConnectionRequestedEventArgs args)
@@ -154,7 +208,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 CloseConnection(true);
             }
         }
-
 
         async void ConnectToPeer(PeerInformation peer)
         {
@@ -203,7 +256,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         {
             try
             {
-                StartProgress(App.Current.Resources["ResearchPeers"].ToString());
+                StartProgress(Resources.AppResources.ResearchPeers);
                 var peers = await PeerFinder.FindAllPeersAsync();
 
                 // By clearing the backing data, we are effectively clearing the ListBox
