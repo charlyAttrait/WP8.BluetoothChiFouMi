@@ -65,7 +65,57 @@
 
             <!--PAGE DE JEU-->
             <phone:PivotItem x:Name="ITEM_GAME" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.GamePageName}">
-                <Grid/>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="100" />
+                        <RowDefinition Height="100" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="15*" />
+                        <ColumnDefinition Width="15*" />
+                        <ColumnDefinition Width="40*" />
+                        <ColumnDefinition Width="15*" />
+                        <ColumnDefinition Width="15*" />
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Text="Charly" Grid.ColumnSpan="2" />
+                    <TextBlock Text="VS" Grid.RowSpan="2" Grid.Column="2" HorizontalAlignment="Center" />
+                    <TextBlock Text="Adversaire" Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Right" />
+                    
+                    <Image Grid.Row="2" Grid.Column="1" Source="{Binding MyChoice}" />
+                    
+                    <Button Content="{Binding Timer}" Command="{Binding StartTimer}" 
+                            Grid.Row="3" Grid.ColumnSpan="5" />
+                    
+                    <Image Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Center" 
+                           Source="/Assets/SIGLES/Left_Chi.jpg">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Tap" >
+                                <i:InvokeCommandAction Command="{Binding ChoiceCommand}" CommandParameter="Chi"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Image>
+                    <Image Grid.Row="4" Grid.Column="2" HorizontalAlignment="Center" 
+                           Source="/Assets/SIGLES/Left_Fou.jpg">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Tap" >
+                                <i:InvokeCommandAction Command="{Binding ChoiceCommand}" CommandParameter="Fou"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Image>
+                    <Image Grid.Row="4" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" 
+                           Source="/Assets/SIGLES/Left_Mi.jpg">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Tap" >
+                                <i:InvokeCommandAction Command="{Binding ChoiceCommand}" CommandParameter="Mi"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Image>
+                    
+                </Grid>
             </phone:PivotItem>
 
             <!--PAGE DES SCORES-->

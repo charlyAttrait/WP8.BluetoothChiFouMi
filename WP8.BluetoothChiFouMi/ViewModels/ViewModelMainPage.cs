@@ -4,13 +4,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using Windows.Networking.Proximity;
 using Windows.Networking.Sockets;
+using Windows.Storage;
 using WP8.BluetoothChiFouMi.Resources;
 using WP8.Core;
 
@@ -25,6 +28,12 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         private DelegateCommand _onNavigateTo;
         private DelegateCommand _onNavigateFrom;
 
+        private DelegateCommand _ChoiceCommand;
+        private string _MyChoice;
+
+        private DispatcherTimer _Timer;
+        private DelegateCommand _StartTimer;
+
         ObservableCollection<PeerAppInfo> _peerApps;    // A local copy of peer app information
         StreamSocket _socket;                           // The socket object used to communicate with a peer
         string _peerName = string.Empty;                // The name of the current peer
@@ -38,6 +47,8 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         private object _LIST_SelectedItem;
         private IEnumerable _LIST_ItemsSource;
         private Boolean _isConnectionPossible;
+
+        private ObservableCollection<string> _Records;
 
         #endregion
 
@@ -59,6 +70,37 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         public DelegateCommand onNavigateFrom
         {
             get { return _onNavigateFrom; }
+        }
+
+        public DelegateCommand ChoiceCommand
+        {
+            get { return _ChoiceCommand; }
+        }
+        public string MyChoice
+        {
+            get { return _MyChoice; }
+            set
+            {
+                if (_MyChoice != value)
+                {
+                    _MyChoice = value;
+                    onPropertyChanged();
+                }
+            }
+        }
+
+        public DispatcherTimer Timer
+        {
+            get { return _Timer; }
+            set
+            {
+
+            }
+        }
+        public DelegateCommand StartTimer
+        {
+            get { return _StartTimer; }
+            set { _StartTimer = value; }
         }
 
         public string UserPseudo
@@ -123,6 +165,13 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             }
         }
 
+
+        public ObservableCollection<string> Records
+        {
+            get { return _Records; }
+            set { _Records = value; }
+        }
+
         #endregion
 
         #region Constructors
@@ -136,6 +185,12 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
             _onNavigateTo = new DelegateCommand(OnNavigatedTo);
             _onNavigateFrom = new DelegateCommand(OnNavigatingFrom);
+
+            _ChoiceCommand = new DelegateCommand(ExecuteChoiceCommand);
+
+            _StartTimer = new DelegateCommand(ExecuteStartTimer);
+
+            _Records = new ObservableCollection<string>();
         }
 
         #endregion
@@ -185,6 +240,33 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
             // Cleanup before we leave
             CloseConnection(false);
+        }
+
+        public void ExecuteChoiceCommand(object parameter)
+        {
+            MyChoice = "/Assets/SIGLES/Left_" + parameter.ToString() + ".jpg";
+
+            switch (parameter.ToString())
+            {
+                case "Chi" :
+
+                    break;
+                case "Fou" :
+
+                    break;
+                case "Mi" :
+
+                    break;
+                default :
+                    break;
+             }
+        }
+
+        public void ExecuteStartTimer(object parameter)
+        {
+            Timer = new DispatcherTimer();
+            Timer.Interval = new TimeSpan(0, 0, 1);
+            Timer.Start();
         }
 
         void LIST_PEERS_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -287,7 +369,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                     {
                         _peerApps.Add(new PeerAppInfo(peer));
                     }
-
                 }
             }
             catch (Exception ex)
@@ -342,6 +423,40 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             ConnectionSettingsTask connectionSettingsTask = new ConnectionSettingsTask();
             connectionSettingsTask.ConnectionSettingsType = ConnectionSettingsType.Bluetooth;
             connectionSettingsTask.Show();
+        }
+
+        private async void fillRecordsTab(string record = "")
+        {
+            // Get the local folder.
+            StorageFolder local = Windows.Storage.ApplicationData.Current.LocalFolder;
+
+            if (local != null)
+            {
+                // OPEN / CREATE folder
+                var dataFolder = await local.CreateFolderAsync("DataFolder", CreationCollisionOption.OpenIfExists);
+
+                // OPEN / CREATE file
+                var file = await dataFolder.CreateFileAsync("DataFile.txt", CreationCollisionOption.OpenIfExists);
+
+                if (record == "") // READING ISOLATED STORAGE
+                {
+                    // Reading Records File
+                    using (StreamReader streamReader = new StreamReader(file.Path))
+                    {
+                        Records.Add(streamReader.ReadLine());
+                    }
+                }
+                else // WRITING ISOLATED STORAGE
+                {
+                    // Records to save
+                    byte[] fileBytes = System.Text.Encoding.UTF8.GetBytes(record);
+
+                    using (var line = await file.OpenStreamForWriteAsync())
+                    {
+                        line.Write(fileBytes, 0, fileBytes.Length);
+                    }
+                }
+            }
         }
 
         #endregion
