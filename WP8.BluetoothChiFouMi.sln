@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WP8.BluetoothChiFouMi", "WP8.BluetoothChiFouMi\WP8.BluetoothChiFouMi.csproj", "{9C18E4BD-E6D8-4133-A68B-C878D42C9AE8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WP8.Core", "..\WP8\WP.Core\WP8.Core.csproj", "{D2AB8CA1-8695-4996-97AB-1A6D96EA8673}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WP8.Core", "WP.Core\WP8.Core.csproj", "{D2AB8CA1-8695-4996-97AB-1A6D96EA8673}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

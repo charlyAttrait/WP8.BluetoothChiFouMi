@@ -1,6 +1,7 @@
 ﻿using Microsoft.Phone.Shell;
 using Microsoft.Phone.Tasks;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -33,8 +34,9 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         const uint ERR_MISSING_CAPS = 0x80070005;       // A capability is missing from your WMAppManifest.xml
         const uint ERR_NOT_ADVERTISING = 0x8000000E;    // You are currently not advertising your presence using PeerFinder.Start()
 
-        private ListBox _LIST_PEERS;
         private string _TXT_PEER_Text;
+        private object _LIST_SelectedItem;
+        private IEnumerable _LIST_ItemsSource;
         private Boolean _isConnectionPossible;
 
         #endregion
@@ -72,27 +74,38 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             }
         }
 
-        public ListBox LIST_PEERS
-        {
-            get { return _LIST_PEERS; }
-            set
-            {
-                if (_LIST_PEERS != value)
-                {
-                    _LIST_PEERS = value;
-                    LIST_PEERS.SelectionChanged += LIST_PEERS_SelectionChanged;
-                    onPropertyChanged();
-                }
-            }
-        }
         public string TXT_PEER_Text
         {
             get { return _TXT_PEER_Text; }
-            set
+            set 
             {
                 if (_TXT_PEER_Text != value)
                 {
                     _TXT_PEER_Text = value;
+                    onPropertyChanged();
+                }
+            }
+        }
+        public object LIST_SelectedItem
+        {
+            get { return _LIST_SelectedItem; }
+            set 
+            {
+                if (_LIST_SelectedItem != value)
+                {
+                    _LIST_SelectedItem = value;
+                    onPropertyChanged();
+                }
+            }
+        }
+        public IEnumerable LIST_ItemsSource
+        {
+            get { return _LIST_ItemsSource; }
+            set 
+            {
+                if (_LIST_ItemsSource != value)
+                {
+                    _LIST_ItemsSource = value;
                     onPropertyChanged();
                 }
             }
@@ -136,14 +149,14 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
         private void ExecuteConnectToDeviceCommand(object parameter)
         {
-            if (LIST_PEERS.SelectedItem == null)
+            if (LIST_SelectedItem == null)
             {
                 MessageBox.Show(AppResources.Err_NoPeer, AppResources.Err_NoConnectTitle, MessageBoxButton.OK);
                 return;
             }
 
             // Connect to the selected peer.
-            PeerAppInfo pdi = LIST_PEERS.SelectedItem as PeerAppInfo;
+            PeerAppInfo pdi = LIST_SelectedItem as PeerAppInfo;
             PeerInformation peer = pdi.PeerInfo;
 
             ConnectToPeer(peer);
@@ -154,8 +167,8 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         {
             // Maintain a list of peers and bind that list to the UI
             _peerApps = new ObservableCollection<PeerAppInfo>();
-            LIST_PEERS.ItemsSource = _peerApps;
-
+            LIST_ItemsSource = _peerApps;
+            
             // Register for incoming connection requests
             PeerFinder.ConnectionRequested += PeerFinder_ConnectionRequested;
 
@@ -274,10 +287,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                     {
                         _peerApps.Add(new PeerAppInfo(peer));
                     }
-
-                    // If there is only one peer, go ahead and select it
-                    if (LIST_PEERS.Items.Count == 1)
-                        LIST_PEERS.SelectedIndex = 0;
 
                 }
             }
