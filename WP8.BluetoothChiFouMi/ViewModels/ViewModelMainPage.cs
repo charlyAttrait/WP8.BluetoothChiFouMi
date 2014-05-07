@@ -48,6 +48,8 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
         private string _OpponentPseudo;
 
+        private Visibility _isGameVisible;
+
         private Score _CurrentScore;
 
         private DelegateCommand _ChoiceCommand; // Command du choix de signe (Pierre, Papier, Ciseaux)
@@ -59,7 +61,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         //private DispatcherTimer _Timer;
         private System.Threading.Timer _Timer;
         private int tik; // Valeur de départ du décompte du Timer
-        private string _CountDown; // Valeur à afficher
+        private int _CountDown; // Valeur à afficher
         private Boolean _isTimerEnabled; // Booleen pour vérrouiller le bouton de lancement du Timer
         private Boolean _isResetTimerEnabled; // Boolean pour vérouiller le bouton de réinitialisation du Timer
 
@@ -96,6 +98,19 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 if (value != _OpponentPseudo)
                 {
                     _OpponentPseudo = value;
+                    onPropertyChanged();
+                }
+            }
+        }
+
+        public Visibility isGameVisible
+        {
+            get { return _isGameVisible; }
+            set
+            {
+                if (_isGameVisible != value)
+                {
+                    _isGameVisible = value;
                     onPropertyChanged();
                 }
             }
@@ -189,7 +204,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             }
         }
 
-        public string CountDown
+        public int CountDown
         {
             get { return _CountDown; }
             set
@@ -266,7 +281,8 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             _Records = new ObservableCollection<Score>();
 
             isTimerEnabled = true;
-            CountDown = "3";
+            CountDown = 3;
+            isGameVisible = Visibility.Collapsed;
         }
 
         #endregion
@@ -365,6 +381,8 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 PeerFinder.Stop();
 
                 _peerName = peer.DisplayName;
+
+                isGameVisible = Visibility.Visible;
             }
             catch (Exception ex)
             {
@@ -483,7 +501,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             if (tik == 0 && _Timer != null && MyChoice == null)
             {
                 MyChoice = "/Assets/SIGLES/Left_" + parameter.ToString() + ".png";
-
             }
 
             switch (parameter.ToString())
@@ -517,15 +534,14 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 if (tik > 0)
                 {
                     tik--;
-                    CountDown = tik.ToString();
                 }
                 else
                 {
-                    CountDown = "Times Up";
                     isResetTimerEnabled = true;
                     _Timer.Dispose();
                     _Timer = null;
                 }
+                CountDown = tik;
             });
         }
 
@@ -535,7 +551,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             if (isResetTimerEnabled)
             {
                 tik = 3;
-                CountDown = tik.ToString();
+                CountDown = tik;
                 isTimerEnabled = true;
                 MyChoice = null;
             }
