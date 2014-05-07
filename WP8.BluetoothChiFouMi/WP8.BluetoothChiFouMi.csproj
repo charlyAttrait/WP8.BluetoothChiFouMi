@@ -124,11 +124,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\SIGLES\Left_Chi.png" />
-    <Content Include="Assets\SIGLES\Left_Fou.png" />
     <Content Include="Assets\SIGLES\Left_Mi.png" />
+    <Content Include="Assets\SIGLES\Left_Fou.png" />
     <Content Include="Assets\SIGLES\Right_Chi.png" />
-    <Content Include="Assets\SIGLES\Right_Fou.png" />
     <Content Include="Assets\SIGLES\Right_Mi.png" />
+    <Content Include="Assets\SIGLES\Right_Fou.png" />
     <Content Include="Assets\Tiles\FlipCycleTileLarge.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

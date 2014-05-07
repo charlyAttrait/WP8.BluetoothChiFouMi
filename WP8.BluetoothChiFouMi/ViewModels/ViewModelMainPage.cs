@@ -483,20 +483,21 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             {
                 MyChoice = "/Assets/SIGLES/Left_" + parameter.ToString() + ".png";
 
-                switch (parameter.ToString())
-                {
-                    case "Chi":
+            }
 
-                        break;
-                    case "Fou":
+            switch (parameter.ToString())
+            {
+                case "Chi":
 
-                        break;
-                    case "Mi":
+                    break;
+                case "Fou":
 
-                        break;
-                    default:
-                        break;
-                }
+                    break;
+                case "Mi":
+
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -508,11 +509,11 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 _Timer.Interval = new TimeSpan(0, 0, 1);
                 _Timer.Tick += new EventHandler(timer1_Tick);
                 tik = 3;
-                _Timer.Start();
                 isTimerEnabled = false;
                 isResetTimerEnabled = false;
+                _Timer.Start();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }
