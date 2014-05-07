@@ -15,14 +15,11 @@
     SupportedOrientations="Portrait"  Orientation="Portrait"
     shell:SystemTray.IsVisible="True">
     
-    <phone:PhoneApplicationPage.DataContext>
-        <model:ViewModelMainPage/>
-    </phone:PhoneApplicationPage.DataContext>
-    
     <!--LayoutRoot est la grille racine où tout le contenu de la page est placé-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
         <!--Contrôle Pivot-->
-        <phone:Pivot x:Name="PIVOT" Title="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.ApplicationTitle}">
+        <phone:Pivot x:Name="PIVOT" 
+                     Title="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.ApplicationTitle}">
             <!--PAGE D'ACCUEIL (pseudo + bluetooth connection)-->
             <phone:PivotItem x:Name="ITEM_WELCOME" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.WelcomePageName}">
                 <i:Interaction.Triggers>
@@ -33,6 +30,10 @@
                         <i:InvokeCommandAction Command="{Binding onNavigateFrom}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
+                
+                <phone:PivotItem.DataContext>
+                    <model:ViewModelBluetoothPage />
+                </phone:PivotItem.DataContext>
                 
                 <Grid>
                     <Grid.RowDefinitions>
@@ -65,12 +66,15 @@
 
             <!--PAGE DE JEU-->
             <phone:PivotItem x:Name="ITEM_GAME" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.GamePageName}">
+                <phone:PivotItem.DataContext>
+                    <model:ViewModelMainPage />
+                </phone:PivotItem.DataContext>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30" />
                         <RowDefinition Height="30" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="100" />
+                        <RowDefinition Height="70" />
                         <RowDefinition Height="100" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
@@ -81,17 +85,19 @@
                         <ColumnDefinition Width="15*" />
                     </Grid.ColumnDefinitions>
                     
-                    <TextBlock Text="Charly" Grid.ColumnSpan="2" />
+                    <TextBlock Text="{Binding UserPseudo}" Grid.ColumnSpan="2" />
                     <TextBlock Text="VS" Grid.RowSpan="2" Grid.Column="2" HorizontalAlignment="Center" />
                     <TextBlock Text="Adversaire" Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Right" />
                     
-                    <Image Grid.Row="2" Grid.Column="1" Source="{Binding MyChoice}" />
-                    
-                    <Button Content="{Binding Timer}" Command="{Binding StartTimer}" 
-                            Grid.Row="3" Grid.ColumnSpan="5" />
-                    
+                    <Image Grid.Row="2" Grid.ColumnSpan="2" Source="{Binding MyChoice}" />
+
+                    <Button Content="{Binding CountDown}" Grid.Row="3" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" 
+                            IsEnabled="{Binding isTimerEnabled}" Command="{Binding StartTimer}" />
+                    <Button Content="¤" Grid.Row="3" Grid.Column="5" HorizontalAlignment="Stretch"
+                            Command="{Binding ResetTimer}" IsEnabled="{Binding isResetTimerEnabled}"/>
+
                     <Image Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Center" 
-                           Source="/Assets/SIGLES/Left_Chi.jpg">
+                           Source="/Assets/SIGLES/Left_Chi.png">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="Tap" >
                                 <i:InvokeCommandAction Command="{Binding ChoiceCommand}" CommandParameter="Chi"/>
@@ -99,7 +105,7 @@
                         </i:Interaction.Triggers>
                     </Image>
                     <Image Grid.Row="4" Grid.Column="2" HorizontalAlignment="Center" 
-                           Source="/Assets/SIGLES/Left_Fou.jpg">
+                           Source="/Assets/SIGLES/Left_Fou.png">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="Tap" >
                                 <i:InvokeCommandAction Command="{Binding ChoiceCommand}" CommandParameter="Fou"/>
@@ -107,7 +113,7 @@
                         </i:Interaction.Triggers>
                     </Image>
                     <Image Grid.Row="4" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" 
-                           Source="/Assets/SIGLES/Left_Mi.jpg">
+                           Source="/Assets/SIGLES/Left_Mi.png">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="Tap" >
                                 <i:InvokeCommandAction Command="{Binding ChoiceCommand}" CommandParameter="Mi"/>
@@ -120,6 +126,9 @@
 
             <!--PAGE DES SCORES-->
             <phone:PivotItem x:Name="ITEM_RECORDS" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.RecordsPageName}">
+                <phone:PivotItem.DataContext>
+                    <model:ViewModelMainPage />
+                </phone:PivotItem.DataContext>
                 <Grid ShowGridLines="True">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="35*"/>

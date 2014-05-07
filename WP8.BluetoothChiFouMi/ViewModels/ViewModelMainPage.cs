@@ -23,54 +23,23 @@ namespace WP8.BluetoothChiFouMi.ViewModels
     {
         #region Fields
 
-        private DelegateCommand _refreshDevicesCommand;
-        private DelegateCommand _connectToDeviceCommand;
-        private DelegateCommand _onNavigateTo;
-        private DelegateCommand _onNavigateFrom;
+        private DelegateCommand _ChoiceCommand; // Command du choix de signe (Pierre, Papier, Ciseaux)
+        private DelegateCommand _StartTimer; // Command de démarrage du Timer
+        private DelegateCommand _ResetTimer; // Command de réinitialisation du Timer
 
-        private DelegateCommand _ChoiceCommand;
-        private string _MyChoice;
+        private string _MyChoice; // Récupération du choix de l'utilisateur
 
         private DispatcherTimer _Timer;
-        private DelegateCommand _StartTimer;
+        private int tik; // Valeur de départ du décompte du Timer
+        private string _CountDown; // Valeur à afficher
+        private Boolean _isTimerEnabled; // Booleen pour vérrouiller le bouton de lancement du Timer
+        private Boolean _isResetTimerEnabled; // Boolean pour vérouiller le bouton de réinitialisation du Timer
 
-        ObservableCollection<PeerAppInfo> _peerApps;    // A local copy of peer app information
-        StreamSocket _socket;                           // The socket object used to communicate with a peer
-        string _peerName = string.Empty;                // The name of the current peer
-
-        // Error code constants
-        const uint ERR_BLUETOOTH_OFF = 0x8007048F;      // The Bluetooth radio is off
-        const uint ERR_MISSING_CAPS = 0x80070005;       // A capability is missing from your WMAppManifest.xml
-        const uint ERR_NOT_ADVERTISING = 0x8000000E;    // You are currently not advertising your presence using PeerFinder.Start()
-
-        private string _TXT_PEER_Text;
-        private object _LIST_SelectedItem;
-        private IEnumerable _LIST_ItemsSource;
-        private Boolean _isConnectionPossible;
-
-        private ObservableCollection<string> _Records;
+        private ObservableCollection<string> _Records; // Liste des scores
 
         #endregion
 
         #region Properties
-
-        public DelegateCommand refreshDevicesCommand
-        {
-            get { return _refreshDevicesCommand; }
-        }
-        public DelegateCommand connectToDeviceCommand
-        {
-            get { return _connectToDeviceCommand; }
-        }
-        public DelegateCommand onNavigateTo
-        {
-            get { return _onNavigateTo; }
-        }
-
-        public DelegateCommand onNavigateFrom
-        {
-            get { return _onNavigateFrom; }
-        }
 
         public DelegateCommand ChoiceCommand
         {
@@ -89,20 +58,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             }
         }
 
-        public DispatcherTimer Timer
-        {
-            get { return _Timer; }
-            set
-            {
-
-            }
-        }
-        public DelegateCommand StartTimer
-        {
-            get { return _StartTimer; }
-            set { _StartTimer = value; }
-        }
-
         public string UserPseudo
         {
             get { return App.UserPseudo; }
@@ -116,55 +71,52 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             }
         }
 
-        public string TXT_PEER_Text
+        public string CountDown
         {
-            get { return _TXT_PEER_Text; }
-            set 
-            {
-                if (_TXT_PEER_Text != value)
-                {
-                    _TXT_PEER_Text = value;
-                    onPropertyChanged();
-                }
-            }
-        }
-        public object LIST_SelectedItem
-        {
-            get { return _LIST_SelectedItem; }
-            set 
-            {
-                if (_LIST_SelectedItem != value)
-                {
-                    _LIST_SelectedItem = value;
-                    onPropertyChanged();
-                }
-            }
-        }
-        public IEnumerable LIST_ItemsSource
-        {
-            get { return _LIST_ItemsSource; }
-            set 
-            {
-                if (_LIST_ItemsSource != value)
-                {
-                    _LIST_ItemsSource = value;
-                    onPropertyChanged();
-                }
-            }
-        }
-        public Boolean isConnectionPossible
-        {
-            get { return _isConnectionPossible; }
+            get { return _CountDown; }
             set
             {
-                if (_isConnectionPossible != value)
+                if (_CountDown != value)
                 {
-                    _isConnectionPossible = value;
+                    _CountDown = value;
                     onPropertyChanged();
                 }
             }
         }
-
+        public Boolean isTimerEnabled
+        {
+            get { return _isTimerEnabled; }
+            set
+            {
+                if (_isTimerEnabled != value)
+                {
+                    _isTimerEnabled = value;
+                    onPropertyChanged();
+                }
+            }
+        }
+        public Boolean isResetTimerEnabled
+        {
+            get { return _isResetTimerEnabled; }
+            set
+            {
+                if (_isResetTimerEnabled != value)
+                {
+                    _isResetTimerEnabled = value;
+                    onPropertyChanged();
+                }
+            }
+        }
+        public DelegateCommand StartTimer
+        {
+            get { return _StartTimer; }
+            set { _StartTimer = value; }
+        }
+        public DelegateCommand ResetTimer
+        {
+            get { return _ResetTimer; }
+            set { _ResetTimer = value; }
+        }
 
         public ObservableCollection<string> Records
         {
@@ -178,267 +130,106 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
         public ViewModelMainPage()
         {
-            isConnectionPossible = false;
-
-            _refreshDevicesCommand = new DelegateCommand(ExecuteRefreshDevicesCommand);
-            _connectToDeviceCommand = new DelegateCommand(ExecuteConnectToDeviceCommand);
-
-            _onNavigateTo = new DelegateCommand(OnNavigatedTo);
-            _onNavigateFrom = new DelegateCommand(OnNavigatingFrom);
-
             _ChoiceCommand = new DelegateCommand(ExecuteChoiceCommand);
 
             _StartTimer = new DelegateCommand(ExecuteStartTimer);
+            _ResetTimer = new DelegateCommand(ExecuteResetTimer);
 
             _Records = new ObservableCollection<string>();
+
+            isTimerEnabled = true;
+            CountDown = "3";
         }
 
         #endregion
 
         #region Methods
 
-        private void ExecuteRefreshDevicesCommand(object parameter)
-        {
-            RefreshPeerAppList();
-        }
-
-        private void ExecuteConnectToDeviceCommand(object parameter)
-        {
-            if (LIST_SelectedItem == null)
-            {
-                MessageBox.Show(AppResources.Err_NoPeer, AppResources.Err_NoConnectTitle, MessageBoxButton.OK);
-                return;
-            }
-
-            // Connect to the selected peer.
-            PeerAppInfo pdi = LIST_SelectedItem as PeerAppInfo;
-            PeerInformation peer = pdi.PeerInfo;
-
-            ConnectToPeer(peer);
-        }
-
-
-        public void OnNavigatedTo(object parameter)
-        {
-            // Maintain a list of peers and bind that list to the UI
-            _peerApps = new ObservableCollection<PeerAppInfo>();
-            LIST_ItemsSource = _peerApps;
-            
-            // Register for incoming connection requests
-            PeerFinder.ConnectionRequested += PeerFinder_ConnectionRequested;
-
-            // Start advertising ourselves so that our peers can find us
-            PeerFinder.DisplayName = App.UserPseudo;
-            PeerFinder.Start();
-
-            RefreshPeerAppList();
-        }
-
-        public void OnNavigatingFrom(object parameter)
-        {
-            PeerFinder.ConnectionRequested -= PeerFinder_ConnectionRequested;
-
-            // Cleanup before we leave
-            CloseConnection(false);
-        }
-
         public void ExecuteChoiceCommand(object parameter)
         {
-            MyChoice = "/Assets/SIGLES/Left_" + parameter.ToString() + ".jpg";
-
-            switch (parameter.ToString())
+            if (_Timer != null)
             {
-                case "Chi" :
+                MyChoice = "/Assets/SIGLES/Left_" + parameter.ToString() + ".png";
 
-                    break;
-                case "Fou" :
+                switch (parameter.ToString())
+                {
+                    case "Chi":
 
-                    break;
-                case "Mi" :
+                        break;
+                    case "Fou":
 
-                    break;
-                default :
-                    break;
-             }
+                        break;
+                    case "Mi":
+
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
 
         public void ExecuteStartTimer(object parameter)
         {
-            Timer = new DispatcherTimer();
-            Timer.Interval = new TimeSpan(0, 0, 1);
-            Timer.Start();
-        }
-
-        void LIST_PEERS_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (e.AddedItems.Count != 0)
-            {
-                isConnectionPossible = true;
-            }
-            else
-            {
-                isConnectionPossible = false;
-            }
-        }
-
-        public void PeerFinder_ConnectionRequested(object sender, ConnectionRequestedEventArgs args)
-        {
             try
             {
-                // Ask the user if they want to accept the incoming request.
-                var result = MessageBox.Show(String.Format(AppResources.Msg_ConnectionPrompt, args.PeerInformation.DisplayName)
-                                                , AppResources.Msg_ConnectionPromptTitle, MessageBoxButton.OKCancel);
-                if (result == MessageBoxResult.OK)
-                {
-                    ConnectToPeer(args.PeerInformation);
-                }
-                else
-                {
-                    // Currently no method to tell the sender that the connection was rejected.
-                }
+                _Timer = new DispatcherTimer();
+                _Timer.Interval = new TimeSpan(0, 0, 1);
+                _Timer.Tick += new EventHandler(timer1_Tick);
+                tik = 3;
+                _Timer.Start();
+                isTimerEnabled = false;
+                isResetTimerEnabled = false;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
-                CloseConnection(true);
             }
         }
-
-        async void ConnectToPeer(PeerInformation peer)
+        void timer1_Tick(object sender, EventArgs e)
         {
-            try
+            CountDown = tik.ToString();
+            if (tik > 0)
             {
-                _socket = await PeerFinder.ConnectAsync(peer);
-
-                // We can preserve battery by not advertising our presence.
-                PeerFinder.Stop();
-
-                _peerName = peer.DisplayName;
-            }
-            catch (Exception ex)
-            {
-                // In this sample, we handle each exception by displaying it and
-                // closing any outstanding connection. An exception can occur here if, for example, 
-                // the connection was refused, the connection timeout etc.
-                MessageBox.Show(ex.Message);
-                CloseConnection(false);
-            }
-        }
-
-        private void CloseConnection(bool continueAdvertise)
-        {
-            if (_socket != null)
-            {
-                _socket.Dispose();
-                _socket = null;
-            }
-
-            if (continueAdvertise)
-            {
-                // Since there is no connection, let's advertise ourselves again, so that peers can find us.
-                PeerFinder.Start();
+                tik--;
             }
             else
             {
-                PeerFinder.Stop();
+                CountDown = "Times Up";
+                isResetTimerEnabled = true;
+                _Timer.Stop();
+                _Timer = null;
+            }
+        }
+
+        public void ExecuteResetTimer(object parameter)
+        {
+            // Si le Timer est terminé, on peut le réinitialiser
+            if (isResetTimerEnabled)
+            {
+                tik = 3;
+                CountDown = tik.ToString();
+                isTimerEnabled = true;
+                MyChoice = null;
             }
         }
 
         /// <summary>
-        /// Asynchronous call to re-populate the ListBox of peers.
+        /// Remplissage du tableau des scores
         /// </summary>
-        private async void RefreshPeerAppList()
-        {
-            try
-            {
-                StartProgress(Resources.AppResources.ResearchPeers);
-                var peers = await PeerFinder.FindAllPeersAsync();
-
-                // By clearing the backing data, we are effectively clearing the ListBox
-                _peerApps.Clear();
-
-                if (peers.Count == 0)
-                {
-                    TXT_PEER_Text = AppResources.Msg_NoPeers;
-                }
-                else
-                {
-                    TXT_PEER_Text = String.Format(AppResources.Msg_FoundPeers, peers.Count);
-                    // Add peers to list
-                    foreach (var peer in peers)
-                    {
-                        _peerApps.Add(new PeerAppInfo(peer));
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                if ((uint)ex.HResult == ERR_BLUETOOTH_OFF)
-                {
-                    var result = MessageBox.Show(AppResources.Err_BluetoothOff, AppResources.Err_BluetoothOffCaption, MessageBoxButton.OKCancel);
-                    if (result == MessageBoxResult.OK)
-                    {
-                        ShowBluetoothControlPanel();
-                    }
-                }
-                else if ((uint)ex.HResult == ERR_MISSING_CAPS)
-                {
-                    MessageBox.Show(AppResources.Err_MissingCaps);
-                }
-                else if ((uint)ex.HResult == ERR_NOT_ADVERTISING)
-                {
-                    MessageBox.Show(AppResources.Err_NotAdvertising);
-                }
-                else
-                {
-                    MessageBox.Show(ex.Message);
-                }
-            }
-            finally
-            {
-                StopProgress();
-            }
-        }
-
-        private void StartProgress(string message)
-        {
-            SystemTray.ProgressIndicator.Text = message;
-            SystemTray.ProgressIndicator.IsIndeterminate = true;
-            SystemTray.ProgressIndicator.IsVisible = true;
-        }
-        private void StopProgress()
-        {
-            if (SystemTray.ProgressIndicator != null)
-            {
-                SystemTray.ProgressIndicator.IsVisible = false;
-                SystemTray.ProgressIndicator.IsIndeterminate = false;
-            }
-        }
-
-        /// <summary>
-        /// Open the bluetooth settings page (to activate bluetooth connection)
-        /// </summary>
-        private void ShowBluetoothControlPanel()
-        {
-            ConnectionSettingsTask connectionSettingsTask = new ConnectionSettingsTask();
-            connectionSettingsTask.ConnectionSettingsType = ConnectionSettingsType.Bluetooth;
-            connectionSettingsTask.Show();
-        }
-
+        /// <param name="record"></param>
         private async void fillRecordsTab(string record = "")
         {
-            // Get the local folder.
+            // Dossier du fichier des scores
             StorageFolder local = Windows.Storage.ApplicationData.Current.LocalFolder;
 
             if (local != null)
             {
-                // OPEN / CREATE folder
+                // OUVRIR / CREER le dossier stockant le fichier des scores
                 var dataFolder = await local.CreateFolderAsync("DataFolder", CreationCollisionOption.OpenIfExists);
 
-                // OPEN / CREATE file
-                var file = await dataFolder.CreateFileAsync("DataFile.txt", CreationCollisionOption.OpenIfExists);
+                // OUVRIR / CREER le fichier des scores
+                var file = await dataFolder.CreateFileAsync("Records.txt", CreationCollisionOption.OpenIfExists);
 
-                if (record == "") // READING ISOLATED STORAGE
+                if (record == "") // LECTURE DES SCORES
                 {
                     // Reading Records File
                     using (StreamReader streamReader = new StreamReader(file.Path))
@@ -446,11 +237,12 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                         Records.Add(streamReader.ReadLine());
                     }
                 }
-                else // WRITING ISOLATED STORAGE
+                else // ECRITUTE D'UN SCORE
                 {
-                    // Records to save
+                    // Ecrire le record sous forme d'un tableau de byte
                     byte[] fileBytes = System.Text.Encoding.UTF8.GetBytes(record);
 
+                    // Ecriture dans le fichier
                     using (var line = await file.OpenStreamForWriteAsync())
                     {
                         line.Write(fileBytes, 0, fileBytes.Length);
@@ -461,20 +253,4 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
         #endregion
     }
-
-    /// <summary>
-    ///  Class to hold all peer information
-    /// </summary>
-    public class PeerAppInfo
-    {
-        internal PeerAppInfo(PeerInformation peerInformation)
-        {
-            this.PeerInfo = peerInformation;
-            this.DisplayName = this.PeerInfo.DisplayName;
-        }
-
-        public string DisplayName { get; private set; }
-        public PeerInformation PeerInfo { get; private set; }
-    }
-
 }
