@@ -15,6 +15,10 @@
     SupportedOrientations="Portrait"  Orientation="Portrait"
     shell:SystemTray.IsVisible="True">
     
+    <phone:PhoneApplicationPage.DataContext>
+        <model:ViewModelMainPage />
+    </phone:PhoneApplicationPage.DataContext>
+    
     <!--LayoutRoot est la grille racine où tout le contenu de la page est placé-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
         <!--Contrôle Pivot-->
@@ -30,10 +34,6 @@
                         <i:InvokeCommandAction Command="{Binding onNavigateFrom}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
-                
-                <phone:PivotItem.DataContext>
-                    <model:ViewModelBluetoothPage />
-                </phone:PivotItem.DataContext>
                 
                 <Grid>
                     <Grid.RowDefinitions>
@@ -66,9 +66,6 @@
 
             <!--PAGE DE JEU-->
             <phone:PivotItem x:Name="ITEM_GAME" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.GamePageName}">
-                <phone:PivotItem.DataContext>
-                    <model:ViewModelMainPage />
-                </phone:PivotItem.DataContext>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30" />
@@ -85,9 +82,9 @@
                         <ColumnDefinition Width="15*" />
                     </Grid.ColumnDefinitions>
                     
-                    <TextBlock Text="{Binding UserPseudo}" Grid.ColumnSpan="2" />
+                    <TextBlock Text="{Binding UserPseudo}" Grid.Row="0"  Grid.ColumnSpan="2" />
                     <TextBlock Text="VS" Grid.RowSpan="2" Grid.Column="2" HorizontalAlignment="Center" />
-                    <TextBlock Text="Adversaire" Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Right" />
+                    <TextBlock Text="{Binding OpponentPseudo}" Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Right" />
                     
                     <Image Grid.Row="2" Grid.ColumnSpan="2" Source="{Binding MyChoice}" />
 

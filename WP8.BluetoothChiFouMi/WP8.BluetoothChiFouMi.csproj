@@ -104,7 +104,6 @@
       <DependentUpon>AppResources.resx</DependentUpon>
     </Compile>
     <Compile Include="Score.cs" />
-    <Compile Include="ViewModels\ViewModelBluetoothPage.cs" />
     <Compile Include="ViewModels\ViewModelMainPage.cs" />
   </ItemGroup>
   <ItemGroup>
