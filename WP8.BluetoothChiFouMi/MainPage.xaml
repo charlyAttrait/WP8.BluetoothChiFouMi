@@ -68,11 +68,12 @@
             <phone:PivotItem x:Name="ITEM_GAME" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.GamePageName}">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="70" />
                         <RowDefinition Height="100" />
+                        <RowDefinition Height="20" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="15*" />
@@ -82,16 +83,18 @@
                         <ColumnDefinition Width="15*" />
                     </Grid.ColumnDefinitions>
                     
-                    <TextBlock Text="{Binding UserPseudo}" Grid.Row="0"  Grid.ColumnSpan="2" />
-                    <TextBlock Text="VS" Grid.RowSpan="2" Grid.Column="2" HorizontalAlignment="Center" />
-                    <TextBlock Text="{Binding OpponentPseudo}" Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Right" />
+                    <TextBlock Text="{Binding UserPseudo}" Grid.Row="0"  Grid.ColumnSpan="2" 
+                               Style="{StaticResource PhoneTextExtraLargeStyle}" />
+                    <TextBlock Text="VS" Grid.RowSpan="2" Grid.Column="2" HorizontalAlignment="Center" Style="{StaticResource PhoneTextExtraLargeStyle}" />
+                    <TextBlock Text="{Binding OpponentPseudo}" Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Right" 
+                               Style="{StaticResource PhoneTextExtraLargeStyle}" />
                     
                     <Image Grid.Row="2" Grid.ColumnSpan="2" Source="{Binding MyChoice}" />
 
                     <Button Content="{Binding CountDown}" Grid.Row="3" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" 
                             IsEnabled="{Binding isTimerEnabled}" Command="{Binding StartTimer}" />
                     <Button Content="¤" Grid.Row="3" Grid.Column="5" HorizontalAlignment="Stretch"
-                            Command="{Binding ResetTimer}" IsEnabled="{Binding isResetTimerEnabled}"/>
+                            Command="{Binding ResetTimer}" IsEnabled="{Binding isResetTimerEnabled}" />
 
                     <Image Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Center" 
                            Source="/Assets/SIGLES/Left_Chi.png">

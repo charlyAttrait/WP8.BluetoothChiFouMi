@@ -56,7 +56,8 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
         private string _MyChoice; // Récupération du choix de l'utilisateur
 
-        private DispatcherTimer _Timer;
+        //private DispatcherTimer _Timer;
+        private System.Threading.Timer _Timer;
         private int tik; // Valeur de départ du décompte du Timer
         private string _CountDown; // Valeur à afficher
         private Boolean _isTimerEnabled; // Booleen pour vérrouiller le bouton de lancement du Timer
@@ -503,34 +504,29 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
         public void ExecuteStartTimer(object parameter)
         {
-            try
-            {
-                _Timer = new DispatcherTimer();
-                _Timer.Interval = new TimeSpan(0, 0, 1);
-                _Timer.Tick += new EventHandler(timer1_Tick);
-                tik = 3;
-                isTimerEnabled = false;
-                isResetTimerEnabled = false;
-                _Timer.Start();
-            }
-            catch (Exception)
-            {
-            }
+            tik = 3;
+            _Timer = new System.Threading.Timer(new System.Threading.TimerCallback(Timer_Tick), null, 1000, 1000);
+            isTimerEnabled = false;
+            isResetTimerEnabled = false;
         }
-        void timer1_Tick(object sender, EventArgs e)
+
+        private void Timer_Tick(object state)
         {
-            CountDown = tik.ToString();
-            if (tik > 0)
+            Deployment.Current.Dispatcher.BeginInvoke(() =>
             {
-                tik--;
-            }
-            else
-            {
-                CountDown = "Times Up";
-                isResetTimerEnabled = true;
-                _Timer.Stop();
-                _Timer = null;
-            }
+                if (tik > 0)
+                {
+                    tik--;
+                    CountDown = tik.ToString();
+                }
+                else
+                {
+                    CountDown = "Times Up";
+                    isResetTimerEnabled = true;
+                    _Timer.Dispose();
+                    _Timer = null;
+                }
+            });
         }
 
         public void ExecuteResetTimer(object parameter)
