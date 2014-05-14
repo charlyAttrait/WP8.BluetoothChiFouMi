@@ -14,6 +14,7 @@ using System.Windows.Threading;
 using Windows.Networking.Proximity;
 using Windows.Networking.Sockets;
 using Windows.Storage;
+using Windows.Storage.Streams;
 using WP8.BluetoothChiFouMi.Resources;
 using WP8.Core;
 
@@ -318,7 +319,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
             RefreshPeerAppList();
         }
-
         public void OnNavigatingFrom(object parameter)
         {
             PeerFinder.ConnectionRequested -= PeerFinder_ConnectionRequested;
@@ -331,17 +331,20 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         {
             try
             {
-                // Ask the user if they want to accept the incoming request.
-                var result = MessageBox.Show(String.Format(AppResources.Msg_ConnectionPrompt, args.PeerInformation.DisplayName)
-                                                , AppResources.Msg_ConnectionPromptTitle, MessageBoxButton.OKCancel);
-                if (result == MessageBoxResult.OK)
+                Deployment.Current.Dispatcher.BeginInvoke(() =>
                 {
-                    ConnectToPeer(args.PeerInformation);
-                }
-                else
-                {
-                    // Currently no method to tell the sender that the connection was rejected.
-                }
+                    // Ask the user if they want to accept the incoming request.
+                    var result = MessageBox.Show(String.Format(AppResources.Msg_ConnectionPrompt, args.PeerInformation.DisplayName)
+                                                    , AppResources.Msg_ConnectionPromptTitle, MessageBoxButton.OKCancel);
+                    if (result == MessageBoxResult.OK)
+                    {
+                        ConnectToPeer(args.PeerInformation);
+                    }
+                    else
+                    {
+                        // Currently no method to tell the sender that the connection was rejected.
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -361,6 +364,10 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
                 _peerName = peer.DisplayName;
 
+                // Since this is a chat, messages can be incoming and outgoing. 
+                // Listen for incoming messages.
+                ListenForIncomingMessage();
+
                 isGameVisible = Visibility.Visible;
             }
             catch (Exception ex)
@@ -372,6 +379,53 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 CloseConnection(false);
             }
         }
+
+        private DataReader _dataReader;
+        private async void ListenForIncomingMessage()
+        {
+            try
+            {
+                var message = await GetMessage();
+
+                // Start listening for the next message.
+                ListenForIncomingMessage();
+            }
+            catch (Exception ex)
+            {
+                CloseConnection(true);
+            }
+        }
+        private async Task<string> GetMessage()
+        {
+            if (_dataReader == null)
+                _dataReader = new DataReader(_socket.InputStream);
+
+            // Each message is sent in two blocks.
+            // The first is the size of the message.
+            // The second if the message itself.
+            //var len = await GetMessageSize();
+            await _dataReader.LoadAsync(4);
+            uint messageLen = (uint)_dataReader.ReadInt32();
+            await _dataReader.LoadAsync(messageLen);
+            return _dataReader.ReadString(messageLen);
+        }
+
+        DataWriter _dataWriter;
+        private async void SendMessage(string message)
+        {
+            if (_dataWriter == null)
+                _dataWriter = new DataWriter(_socket.OutputStream);
+
+            // Each message is sent in two blocks.
+            // The first is the size of the message.
+            // The second if the message itself.
+            _dataWriter.WriteInt32(message.Length);
+            await _dataWriter.StoreAsync();
+
+            _dataWriter.WriteString(message);
+            await _dataWriter.StoreAsync();
+        }
+
 
         private void CloseConnection(bool continueAdvertise)
         {
