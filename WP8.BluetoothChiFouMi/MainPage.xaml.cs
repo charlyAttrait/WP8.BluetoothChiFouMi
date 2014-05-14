@@ -26,7 +26,6 @@ namespace WP8.BluetoothChiFouMi
             InitializeComponent();
 
             SystemTray.SetProgressIndicator(this, new ProgressIndicator());
-            BT_CONNECT.IsEnabled = false;
         }
     }
 }

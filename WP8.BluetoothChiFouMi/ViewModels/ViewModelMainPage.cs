@@ -29,6 +29,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         private DelegateCommand _connectToDeviceCommand;
         private DelegateCommand _onNavigateTo;
         private DelegateCommand _onNavigateFrom;
+        private DelegateCommand _selectionPeerChanged;
 
         ObservableCollection<PeerAppInfo> _peerApps;    // A local copy of peer app information
         StreamSocket _socket;                           // The socket object used to communicate with a peer
@@ -42,7 +43,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         private string _TXT_PEER_Text;
         private object _LIST_SelectedItem;
         private IEnumerable _LIST_ItemsSource;
-        private Boolean _isConnectionPossible;
 
         #endregion
 
@@ -136,6 +136,11 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             get { return _onNavigateFrom; }
         }
 
+        public DelegateCommand selectionPeerChanged
+        {
+            get { return _selectionPeerChanged; }
+        }
+
         public string TXT_PEER_Text
         {
             get { return _TXT_PEER_Text; }
@@ -168,18 +173,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 if (_LIST_ItemsSource != value)
                 {
                     _LIST_ItemsSource = value;
-                    onPropertyChanged();
-                }
-            }
-        }
-        public Boolean isConnectionPossible
-        {
-            get { return _isConnectionPossible; }
-            set
-            {
-                if (_isConnectionPossible != value)
-                {
-                    _isConnectionPossible = value;
                     onPropertyChanged();
                 }
             }
@@ -263,8 +256,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
         public ViewModelMainPage()
         {
-            isConnectionPossible = false;
-
             _refreshDevicesCommand = new DelegateCommand(ExecuteRefreshDevicesCommand);
             _connectToDeviceCommand = new DelegateCommand(ExecuteConnectToDeviceCommand);
 
@@ -334,18 +325,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
             // Cleanup before we leave
             CloseConnection(false);
-        }
-
-        void LIST_PEERS_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (e.AddedItems.Count != 0)
-            {
-                isConnectionPossible = true;
-            }
-            else
-            {
-                isConnectionPossible = false;
-            }
         }
 
         public void PeerFinder_ConnectionRequested(object sender, ConnectionRequestedEventArgs args)

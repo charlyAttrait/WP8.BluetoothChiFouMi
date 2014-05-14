@@ -51,7 +51,13 @@
                             Command="{Binding refreshDevicesCommand}" Margin="10,0,0,0"/>
                     <TextBlock x:Name="TXT_PEER" Grid.Row="2" Margin="25,0,0,0" Text="{Binding TXT_PEER_Text, Mode=TwoWay}"/>
                     <ListBox x:Name="LIST_PEERS" Grid.Row="3" Grid.ColumnSpan="2" Margin="10,10,0,10" 
-                             SelectedItem="{Binding LIST_SelectedItem}" ItemsSource="{Binding LIST_ItemsSource}">
+                             SelectedItem="{Binding LIST_SelectedItem, Mode=TwoWay}" 
+                             ItemsSource="{Binding LIST_ItemsSource, Mode=TwoWay}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="SelectionChanged">
+                                <i:InvokeCommandAction Command="{Binding selectionPeerChanged}" CommandParameter="{Binding LIST_SelectedItem}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding DisplayName}" FontSize="{StaticResource PhoneFontSizeMedium}" Margin="40,0,0,0"/>
@@ -66,7 +72,7 @@
 
             <!--PAGE DE JEU-->
             <phone:PivotItem x:Name="ITEM_GAME" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.GamePageName}"
-                             Visibility="{Binding isGameVisible}">
+                             Visibility="{Binding isGameVisible, Mode=TwoWay}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
