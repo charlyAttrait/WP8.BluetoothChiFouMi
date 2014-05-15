@@ -98,6 +98,7 @@
                                Style="{StaticResource PhoneTextLargeStyle}" />
                     
                     <Image Grid.Row="2" Grid.ColumnSpan="2" Source="{Binding MyChoice}" />
+                    <Image Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="2" Source="{Binding OpponentChoice, Mode=TwoWay}" />
 
                     <Button Content="{Binding CountDown}" Grid.Row="3" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" 
                             IsEnabled="{Binding isTimerEnabled}" Command="{Binding StartTimer}" />
