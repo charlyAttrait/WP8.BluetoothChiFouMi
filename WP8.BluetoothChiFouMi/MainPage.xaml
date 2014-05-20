@@ -98,8 +98,8 @@
                     <TextBlock Text="{Binding OpponentPseudo}" Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Right" 
                                Style="{StaticResource PhoneTextLargeStyle}" />
                     
-                    <Image Grid.Row="2" Grid.ColumnSpan="2" Source="{Binding MyChoice, Mode=TwoWay}" />
-                    <Image Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="2" Source="{Binding OpponentChoice, Mode=TwoWay}" />
+                    <Image Grid.Row="2" Grid.ColumnSpan="2" Source="{Binding MyChoice}" />
+                    <Image Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="2" Source="{Binding OpponentChoice}" />
 
                     <TextBlock Text="{Binding CountDown}" Grid.Row="2" Grid.ColumnSpan="5" HorizontalAlignment="Center" 
                                FontSize="250" FontWeight="Light" Foreground="Red" Visibility="{Binding isTimerVisible}"/>

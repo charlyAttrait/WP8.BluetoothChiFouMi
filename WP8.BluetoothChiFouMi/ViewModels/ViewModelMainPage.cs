@@ -33,7 +33,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         private DelegateCommand _connectToDeviceCommand;
         private DelegateCommand _onNavigateTo;
         private DelegateCommand _onNavigateFrom;
-        private DelegateCommand _selectionPeerChanged;
 
         ObservableCollection<PeerAppInfo> _peerApps;    // A local copy of peer app information
         StreamSocket _socket;                           // The socket object used to communicate with a peer
@@ -143,11 +142,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         public DelegateCommand onNavigateFrom
         {
             get { return _onNavigateFrom; }
-        }
-
-        public DelegateCommand selectionPeerChanged
-        {
-            get { return _selectionPeerChanged; }
         }
 
         public string TXT_PEER_Text
@@ -293,7 +287,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             _onNavigateTo = new DelegateCommand(OnNavigatedTo);
             _onNavigateFrom = new DelegateCommand(OnNavigatingFrom);
 
-
             _ChoiceCommand = new DelegateCommand(ExecuteChoiceCommand);
 
             _StartTimer = new DelegateCommand(ExecuteStartTimer);
@@ -411,6 +404,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
                 _peerName = peer.DisplayName;
 
+                ListenForOpponentChoice();
                 ListenForTimerState();
 
                 OpponentPseudo = peer.DisplayName;
@@ -436,7 +430,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             try
             {
                 var choice = await GetChoice();
-                if (choice != "" || choice != null)
+                if (choice != "")
                 {
                     OpponentChoice = choice;
                 }
@@ -650,7 +644,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         {
             if (CountDown == 0 && _DispatchTimer != null && MyChoice == null)
             {
-                MyChoice = "/Assets/SIGLES/" + parameter.ToString() + ".png";
+                MyChoice = "/Assets/SIGLES/Left_" + parameter.ToString() + ".png";
             }
         }
 
@@ -683,19 +677,18 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// </summary>
         void _DispatchTimer_Tick(object sender, EventArgs e)
         {
-                if (CountDown > 0)
-                {
-                    CountDown--;
-                }
-                else
-                {
-                    isTimerVisible = Visibility.Collapsed;
-                    isResetTimerEnabled = true;
-                    _DispatchTimer.Stop();
-                    _DispatchTimer = null;
-                    SendChoice(MyChoice);
-                    ListenForOpponentChoice();
-                }
+            if (CountDown > 0)
+            {
+                CountDown--;
+            }
+            else
+            {
+                isTimerVisible = Visibility.Collapsed;
+                isResetTimerEnabled = true;
+                _DispatchTimer.Stop();
+                _DispatchTimer = null;
+                SendChoice(MyChoice);
+            }
         }
 
         /// <summary>
