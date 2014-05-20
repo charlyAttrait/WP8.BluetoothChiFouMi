@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -62,9 +63,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         private string _MyChoice; // Récupération du choix de l'utilisateur
         private string _OpponentChoice; // Récupération du choix de l'adversaire
 
-        //private DispatcherTimer _Timer;
-        private System.Threading.Timer _Timer;
-        private int tik; // Valeur de départ du décompte du Timer
+        private DispatcherTimer _DispatchTimer;
         private int _CountDown; // Valeur à afficher
         private Boolean _isTimerEnabled; // Booleen pour vérrouiller le bouton de lancement du Timer
         private Boolean _isResetTimerEnabled; // Boolean pour vérouiller le bouton de réinitialisation du Timer
@@ -353,7 +352,10 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             PeerFinder.DisplayName = App.UserPseudo;
             PeerFinder.Start();
 
-            RefreshPeerAppList();
+            if (UserPseudo != "")
+            {
+                RefreshPeerAppList();
+            }
         }
         public void OnNavigatingFrom(object parameter)
         {
@@ -454,12 +456,9 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 var state = await GetTimerState();
                 if (state == "true")
                 {
-                    ExecuteStartTimer(null);
+                    ExecuteStartTimer("");
                 }
-                else
-                {
                     ListenForTimerState();
-                }
             }
             catch (Exception)
             {
@@ -503,16 +502,19 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// <param name="choice"></param>
         private async void SendChoice(string choice)
         {
-            if (_dataWriter == null)
-                _dataWriter = new DataWriter(_socket.OutputStream);
+            if (choice != null)
+            {
+                if (_dataWriter == null)
+                    _dataWriter = new DataWriter(_socket.OutputStream);
 
-            // The first is the size of the choice.
-            _dataWriter.WriteInt32(choice.Length);
-            await _dataWriter.StoreAsync();
+                // The first is the size of the choice.
+                _dataWriter.WriteInt32(choice.Length);
+                await _dataWriter.StoreAsync();
 
-            // The second if the choice itself.
-            _dataWriter.WriteString(choice);
-            await _dataWriter.StoreAsync();
+                // The second if the choice itself.
+                _dataWriter.WriteString(choice);
+                await _dataWriter.StoreAsync();
+            }
         }
         private async void SetTimerState()
         {
@@ -646,7 +648,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// <param name="parameter">Signe Chi/Fou/Mi choisi par l'utilisateur</param>
         public void ExecuteChoiceCommand(object parameter)
         {
-            if (tik == 0 && _Timer != null && MyChoice == null)
+            if (CountDown == 0 && _DispatchTimer != null && MyChoice == null)
             {
                 MyChoice = "/Assets/SIGLES/" + parameter.ToString() + ".png";
             }
@@ -660,9 +662,17 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// <param name="parameter"></param>
         public void ExecuteStartTimer(object parameter)
         {
-            tik = 3;
-            _Timer = new System.Threading.Timer(new System.Threading.TimerCallback(Timer_Tick), null, 1000, 1000);
-            SetTimerState();
+            if (parameter == null)
+            {
+                SetTimerState();
+            }
+            
+            CountDown = 3;
+            _DispatchTimer = new DispatcherTimer();
+            _DispatchTimer.Interval = TimeSpan.FromMilliseconds(1000);
+            _DispatchTimer.Tick += _DispatchTimer_Tick;
+            _DispatchTimer.Start();
+
             isTimerEnabled = false;
             isResetTimerEnabled = false;
             isTimerVisible = Visibility.Visible;
@@ -671,26 +681,21 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// <summary>
         /// Décompte du Timer
         /// </summary>
-        /// <param name="state"></param>
-        private void Timer_Tick(object state)
+        void _DispatchTimer_Tick(object sender, EventArgs e)
         {
-            Deployment.Current.Dispatcher.BeginInvoke(() =>
-            {
-                if (tik > 0)
+                if (CountDown > 0)
                 {
-                    tik--;
-                    CountDown = tik;
+                    CountDown--;
                 }
                 else
                 {
                     isTimerVisible = Visibility.Collapsed;
                     isResetTimerEnabled = true;
-                    _Timer.Dispose();
-                    _Timer = null;
+                    _DispatchTimer.Stop();
+                    _DispatchTimer = null;
                     SendChoice(MyChoice);
                     ListenForOpponentChoice();
                 }
-            });
         }
 
         /// <summary>
@@ -702,8 +707,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             // Si le Timer est terminé, on peut le réinitialiser
             if (isResetTimerEnabled)
             {
-                tik = 3;
-                CountDown = tik;
+                CountDown = 3;
                 isTimerEnabled = true;
                 MyChoice = null;
                 OpponentChoice = null;
