@@ -24,9 +24,9 @@
         <!--Contrôle Pivot-->
         <phone:Pivot x:Name="PIVOT" 
                      Title="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.ApplicationTitle}"
-                     SelectedIndex="{Binding SelectedPivotItem}">
+                     SelectedIndex="{Binding SelectedPivotItem, Mode=TwoWay}">
             <!--PAGE D'ACCUEIL (pseudo + bluetooth connection)-->
-            <phone:PivotItem x:Name="ITEM_WELCOME" TabIndex="0" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.WelcomePageName}">
+            <phone:PivotItem x:Name="ITEM_WELCOME" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.WelcomePageName}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Loaded" >
                         <i:InvokeCommandAction Command="{Binding onNavigateTo}" />
@@ -72,7 +72,7 @@
             </phone:PivotItem>
 
             <!--PAGE DE JEU-->
-            <phone:PivotItem x:Name="ITEM_GAME" TabIndex="1" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.GamePageName}"
+            <phone:PivotItem x:Name="ITEM_GAME" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.GamePageName}"
                              Visibility="{Binding isGameVisible, Mode=TwoWay}">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -98,11 +98,11 @@
                     <TextBlock Text="{Binding OpponentPseudo}" Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Right" 
                                Style="{StaticResource PhoneTextLargeStyle}" />
                     
-                    <Image Grid.Row="2" Grid.ColumnSpan="2" Source="{Binding MyChoice}" />
+                    <Image Grid.Row="2" Grid.ColumnSpan="2" Source="{Binding MyChoice, Mode=TwoWay}" />
                     <Image Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="2" Source="{Binding OpponentChoice, Mode=TwoWay}" />
 
                     <TextBlock Text="{Binding CountDown}" Grid.Row="2" Grid.ColumnSpan="5" HorizontalAlignment="Center" 
-                               FontSize="180" FontWeight="Bold" Foreground="Red" Visibility="{Binding isTimerVisible}"/>
+                               FontSize="250" FontWeight="Light" Foreground="Red" Visibility="{Binding isTimerVisible}"/>
                     
                     <Button Content="Start" Grid.Row="3" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" 
                             IsEnabled="{Binding isTimerEnabled}" Command="{Binding StartTimer}" />
@@ -138,7 +138,7 @@
             </phone:PivotItem>
 
             <!--PAGE DES SCORES-->
-            <phone:PivotItem x:Name="ITEM_RECORDS" TabIndex="2" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.RecordsPageName}">
+            <phone:PivotItem x:Name="ITEM_RECORDS" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.RecordsPageName}">
                 <phone:PivotItem.DataContext>
                     <model:ViewModelMainPage />
                 </phone:PivotItem.DataContext>
