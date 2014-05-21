@@ -404,7 +404,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
                 _peerName = peer.DisplayName;
 
-                ListenForTimerState();
+                //ListenForTimerState();
                 ListenForOpponentChoice();
 
                 OpponentPseudo = peer.DisplayName;
@@ -469,7 +469,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 _dataReader = new DataReader(_socket.InputStream);
 
             // Read first byte (length of the subsequent message, 255 or less). 
-            uint sizeFieldCount = await _dataReader.LoadAsync(1);
+            uint sizeFieldCount = await _dataReader.LoadAsync(4);
             if (sizeFieldCount != 1)
                 return null;
 
@@ -486,7 +486,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 _dataReader = new DataReader(_socket.InputStream);
 
             // Read first byte (length of the subsequent message, 255 or less). 
-            uint sizeFieldCount = await _dataReader.LoadAsync(1);
+            uint sizeFieldCount = await _dataReader.LoadAsync(4);
             if (sizeFieldCount != 1)
                 return null;
 
