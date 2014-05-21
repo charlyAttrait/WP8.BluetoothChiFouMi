@@ -404,19 +404,16 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
                 _peerName = peer.DisplayName;
 
-                ListenForOpponentChoice();
                 ListenForTimerState();
+                ListenForOpponentChoice();
 
                 OpponentPseudo = peer.DisplayName;
 
                 isGameVisible = Visibility.Visible;
-                SelectedPivotItem += 1;
+                //SelectedPivotItem += 1;
             }
             catch (Exception ex)
             {
-                // In this sample, we handle each exception by displaying it and
-                // closing any outstanding connection. An exception can occur here if, for example, 
-                // the connection was refused, the connection timeout etc.
                 MessageBox.Show(ex.Message);
                 CloseConnection(false);
             }
@@ -435,11 +432,11 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                     OpponentChoice = choice;
                 }
 
-                // Start listening for the opponent choice
                 ListenForOpponentChoice();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                MessageBox.Show(ex.Message);
                 CloseConnection(true);
             }
         }
@@ -452,10 +449,12 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 {
                     ExecuteStartTimer("");
                 }
-                    ListenForTimerState();
+
+                ListenForTimerState();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                MessageBox.Show(ex.Message);
                 CloseConnection(true);
             }
         }
@@ -469,26 +468,34 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             if (_dataReader == null)
                 _dataReader = new DataReader(_socket.InputStream);
 
-            // The first is the size of the choice.
-            await _dataReader.LoadAsync(4);
-            uint messageLen = (uint)_dataReader.ReadInt32();
+            // Read first byte (length of the subsequent message, 255 or less). 
+            uint sizeFieldCount = await _dataReader.LoadAsync(1);
+            if (sizeFieldCount != 1)
+                return null;
 
-            // The second if the choice itself.
-            await _dataReader.LoadAsync(messageLen);
-            return _dataReader.ReadString(messageLen);
+            uint messageLength = _dataReader.ReadByte();
+            uint actualMessageLength = await _dataReader.LoadAsync(messageLength);
+            if (messageLength != actualMessageLength)
+                return null;
+            // Read the choice
+            return _dataReader.ReadString(actualMessageLength);
         }
         private async Task<string> GetTimerState()
         {
             if (_dataReader == null)
                 _dataReader = new DataReader(_socket.InputStream);
 
-            // The first is the size of the timerState.
-            await _dataReader.LoadAsync(4);
-            uint messageLen = (uint)_dataReader.ReadInt32();
+            // Read first byte (length of the subsequent message, 255 or less). 
+            uint sizeFieldCount = await _dataReader.LoadAsync(1);
+            if (sizeFieldCount != 1)
+                return null;
 
-            // The second if the timerState itself.
-            await _dataReader.LoadAsync(messageLen);
-            return _dataReader.ReadString(messageLen);
+            uint messageLength = _dataReader.ReadByte();
+            uint actualMessageLength = await _dataReader.LoadAsync(messageLength);
+            if (messageLength != actualMessageLength)
+                return null;
+            // Read the TimerState
+            return _dataReader.ReadString(actualMessageLength);
         }
         /// <summary>
         /// Envoi du choix utilisateur à l'adversaire (afin de l'afficher)

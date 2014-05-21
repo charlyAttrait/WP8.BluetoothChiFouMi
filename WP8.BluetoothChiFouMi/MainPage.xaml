@@ -23,8 +23,9 @@
     <Grid x:Name="LayoutRoot" Background="Transparent">
         <!--Contrôle Pivot-->
         <phone:Pivot x:Name="PIVOT" 
-                     Title="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.ApplicationTitle}"
-                     SelectedIndex="{Binding SelectedPivotItem, Mode=TwoWay}">
+                     Title="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.ApplicationTitle}">
+            <!--SelectedIndex="{Binding SelectedPivotItem, Mode=TwoWay}"-->
+            
             <!--PAGE D'ACCUEIL (pseudo + bluetooth connection)-->
             <phone:PivotItem x:Name="ITEM_WELCOME" Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.WelcomePageName}">
                 <i:Interaction.Triggers>
