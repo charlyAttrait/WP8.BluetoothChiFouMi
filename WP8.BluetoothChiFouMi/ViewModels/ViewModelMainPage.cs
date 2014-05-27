@@ -523,11 +523,11 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 _dataWriter = new DataWriter(_socket.OutputStream);
 
             // The first is the size of the choice.
-            _dataWriter.WriteInt32(result.Length);
+            _dataWriter.WriteInt32(toSend.Length);
             await _dataWriter.StoreAsync();
 
             // The second if the choice itself.
-            _dataWriter.WriteString(result);
+            _dataWriter.WriteString(toSend);
             await _dataWriter.StoreAsync();
         }
 
