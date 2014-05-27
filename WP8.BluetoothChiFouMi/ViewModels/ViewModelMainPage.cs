@@ -437,8 +437,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
                 _peerName = peer.DisplayName;
  
-                //ListenForTimerState();
-                //ListenForOpponentChoice();
                 Listen();
 				
                 OpponentPseudo = peer.DisplayName;
@@ -453,18 +451,22 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             }
         }
 
+        /// <summary>
+        /// Méthode asynchrone : Ecoute d'informations provenant de l'adversaire
+        /// </summary>
         private async void Listen()
         {
             try
             {
-                var result = await GetChoice();
+                var result = await GetResult();
                 if (result != "")
                 {
+                    // Si le résultat est "true", il s'agit d'executer le Timer car l'adversaire l'a lancé
                     if (result == "true")
                     {
                         ExecuteStartTimer("");
                     }
-                    else
+                    else // Sinon il s'agit du choix de l'adversaire
                     {
                         OpponentSigleChoice = result;
                     }
@@ -478,6 +480,10 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 CloseConnection(true);
             }
         }
+        /// <summary>
+        /// Méthode asynchrone : Réception d'une information envoyé par l'adversaire
+        /// </summary>
+        /// <returns></returns>
         private async Task<string> GetResult()
         {
             if (_dataReader == null)
@@ -494,15 +500,21 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
             return _dataReader.ReadString(messageLen);
         }
+        /// <summary>
+        /// Méthode asynchrone : Envoi d'une information à l'adversaire
+        /// </summary>
+        /// <param name="result"></param>
+        /// <param name="initTimer"></param>
         private async void SendResult(string result, Boolean initTimer)
         {
             string toSend = "";
 
+            // il s'agit d'envoyer la requête de démarrage du Timer de l'adversaire
             if (initTimer)
             {
                 toSend = "true";
             }
-            else if (result != null)
+            else if (result != null) // Envoi du choix de l'utilisateur
             {
                 toSend = result;
             }
@@ -516,117 +528,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
             // The second if the choice itself.
             _dataWriter.WriteString(result);
-            await _dataWriter.StoreAsync();
-        }
-
-        /// <summary>
-        /// Méthode asynchrone : attente du choix de l'adversaire
-        /// </summary>
-        private async void ListenForOpponentChoice()
-        {
-            try
-            {
-                var choice = await GetChoice();
-                if (choice != "")
-                {
-                    OpponentSigleChoice = choice;
-                }
-
-                ListenForOpponentChoice();
-            }
-            catch (Exception ex)
-            {
-				MessageBox.Show(ex.Message);
-                CloseConnection(true);
-            }
-        }
-		private async void ListenForTimerState()
-        {
-            try
-            {
-                var state = await GetTimerState();
-                if (state == "true")
-                {
-                    ExecuteStartTimer("");
-                }
-
-                ListenForTimerState();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                CloseConnection(true);
-            }
-        }
-
-        /// <summary>
-        /// Réception du choix de l'adversaire (afin de l'afficher)
-        /// </summary>
-        /// <returns></returns>
-        private async Task<string> GetChoice()
-        {
-            if (_dataReader == null)
-                _dataReader = new DataReader(_socket.InputStream);
-
-            // The first is the size of the message.
-            await _dataReader.LoadAsync(4);
-
-            //var len = await GetMessageSize();
-            uint messageLen = (uint)_dataReader.ReadInt32();
-
-            // The second if the message itself.
-            await _dataReader.LoadAsync(messageLen);
-
-            return _dataReader.ReadString(messageLen);
-        }
-		private async Task<string> GetTimerState()
-        {
-            if (_dataReader == null)
-                _dataReader = new DataReader(_socket.InputStream);
-
-            // Read first byte (length of the subsequent message, 255 or less). 
-            uint sizeFieldCount = await _dataReader.LoadAsync(4);
-            if (sizeFieldCount != 1)
-                return null;
-
-            uint messageLength = _dataReader.ReadByte();
-            uint actualMessageLength = await _dataReader.LoadAsync(messageLength);
-            if (messageLength != actualMessageLength)
-                return null;
-            // Read the TimerState
-            return _dataReader.ReadString(actualMessageLength);
-        }
-        /// <summary>
-        /// Envoi du choix utilisateur à l'adversaire (afin de l'afficher)
-        /// </summary>
-        /// <param name="choice"></param>
-        private async void SendChoice(string choice)
-        {
-            if (choice != null)
-            {
-                if (_dataWriter == null)
-                    _dataWriter = new DataWriter(_socket.OutputStream);
-
-                // The first is the size of the choice.
-                _dataWriter.WriteInt32(choice.Length);
-                await _dataWriter.StoreAsync();
-
-                // The second if the choice itself.
-                _dataWriter.WriteString(choice);
-                await _dataWriter.StoreAsync();
-            }
-        }
-        private async void SetTimerState()
-        {
-            if (_dataWriter == null)
-                _dataWriter = new DataWriter(_socket.OutputStream);
-
-            // The first is the size of the timerState.
-            _dataWriter.WriteInt32("true".Length);
-            await _dataWriter.StoreAsync();
-
-            // The second if the timerState itself.
-            _dataWriter.WriteString("true");
             await _dataWriter.StoreAsync();
         }
 
@@ -769,7 +670,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             //isTimerVisible = Visibility.Visible;
             if (parameter == null)
             {
-                SetTimerState();
+                SendResult("", true);
             }
 
             CountDown = 3;
@@ -800,7 +701,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                     isResetTimerEnabled = true;
                     _Timer.Dispose();
                     _Timer = null;
-                    SendChoice(MySigleChoice);
+                    SendResult(MySigleChoice, false);
                 }
                 CountDown = CountDown;
             });
@@ -820,7 +721,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 isResetTimerEnabled = true;
                 _DispatchTimer.Stop();
                 _DispatchTimer = null;
-                SendChoice(MySigleChoice);
+                SendResult(MySigleChoice, false);
             }
         }
 
