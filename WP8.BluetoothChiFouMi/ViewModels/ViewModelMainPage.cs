@@ -438,7 +438,8 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 _peerName = peer.DisplayName;
  
                 //ListenForTimerState();
-                ListenForOpponentChoice();
+                //ListenForOpponentChoice();
+                Listen();
 				
                 OpponentPseudo = peer.DisplayName;
 
@@ -450,6 +451,72 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 MessageBox.Show(ex.Message);
                 CloseConnection(false);
             }
+        }
+
+        private async void Listen()
+        {
+            try
+            {
+                var result = await GetChoice();
+                if (result != "")
+                {
+                    if (result == "true")
+                    {
+                        ExecuteStartTimer("");
+                    }
+                    else
+                    {
+                        OpponentSigleChoice = result;
+                    }
+                }
+
+                Listen();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                CloseConnection(true);
+            }
+        }
+        private async Task<string> GetResult()
+        {
+            if (_dataReader == null)
+                _dataReader = new DataReader(_socket.InputStream);
+
+            // The first is the size of the message.
+            await _dataReader.LoadAsync(4);
+
+            //var len = await GetMessageSize();
+            uint messageLen = (uint)_dataReader.ReadInt32();
+
+            // The second if the message itself.
+            await _dataReader.LoadAsync(messageLen);
+
+            return _dataReader.ReadString(messageLen);
+        }
+        private async void SendResult(string result, Boolean initTimer)
+        {
+            string toSend = "";
+
+            if (initTimer)
+            {
+                toSend = "true";
+            }
+            else if (result != null)
+            {
+                toSend = result;
+            }
+
+            if (_dataWriter == null)
+                _dataWriter = new DataWriter(_socket.OutputStream);
+
+            // The first is the size of the choice.
+            _dataWriter.WriteInt32(result.Length);
+            await _dataWriter.StoreAsync();
+
+            // The second if the choice itself.
+            _dataWriter.WriteString(result);
+            await _dataWriter.StoreAsync();
         }
 
         /// <summary>
@@ -550,19 +617,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             }
         }
         private async void SetTimerState()
-        {
-            if (_dataWriter == null)
-                _dataWriter = new DataWriter(_socket.OutputStream);
-
-            // The first is the size of the timerState.
-            _dataWriter.WriteInt32("true".Length);
-            await _dataWriter.StoreAsync();
-
-            // The second if the timerState itself.
-            _dataWriter.WriteString("true");
-            await _dataWriter.StoreAsync();
-        }
-		private async void SetTimerState()
         {
             if (_dataWriter == null)
                 _dataWriter = new DataWriter(_socket.OutputStream);
@@ -708,32 +762,34 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// <param name="parameter"></param>
         public void ExecuteStartTimer(object parameter)
         {
-            CountDown = 3;
-            _Timer = new System.Threading.Timer(new System.Threading.TimerCallback(Timer_Tick), null, 1000, 1000);
-            isTimerEnabled = false;
-            isResetTimerEnabled = false;
-            //if (parameter == null)
-            //{
-            //    SetTimerState();
-            //}
-
             //CountDown = 3;
-            //_DispatchTimer = new DispatcherTimer();
-            //_DispatchTimer.Interval = TimeSpan.FromMilliseconds(1000);
-            //_DispatchTimer.Tick += _DispatchTimer_Tick;
-            //_DispatchTimer.Start();
-
+            //_Timer = new System.Threading.Timer(new System.Threading.TimerCallback(Timer_Tick), null, 1000, 1000);
             //isTimerEnabled = false;
             //isResetTimerEnabled = false;
             //isTimerVisible = Visibility.Visible;
+            if (parameter == null)
+            {
+                SetTimerState();
+            }
+
+            CountDown = 3;
+            _DispatchTimer = new DispatcherTimer();
+            _DispatchTimer.Interval = TimeSpan.FromMilliseconds(1000);
+            _DispatchTimer.Tick += _DispatchTimer_Tick;
+            _DispatchTimer.Start();
+
+            isTimerEnabled = false;
+            isResetTimerEnabled = false;
+            isTimerVisible = Visibility.Visible;
         }
 
         /// <summary>
         /// Décompte du Timer
         /// </summary>
-        void _DispatchTimer_Tick(object sender, EventArgs e)
+        /// <param name="state"></param>
+        private void Timer_Tick(object state)
         {
-            if (CountDown > 0)
+            Deployment.Current.Dispatcher.BeginInvoke(() =>
             {
                 if (CountDown > 0)
                 {
@@ -747,7 +803,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                     SendChoice(MySigleChoice);
                 }
                 CountDown = CountDown;
-            }
+            });
         }
 		/// <summary>
         /// Décompte du Timer
