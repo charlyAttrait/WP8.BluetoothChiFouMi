@@ -1,4 +1,5 @@
-﻿using Microsoft.Phone.Shell;
+﻿using Microsoft.Phone.Controls;
+using Microsoft.Phone.Shell;
 using Microsoft.Phone.Tasks;
 using System;
 using System.Collections;
@@ -7,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -33,7 +35,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         private DelegateCommand _connectToDeviceCommand;
         private DelegateCommand _onNavigateTo;
         private DelegateCommand _onNavigateFrom;
-        private DelegateCommand _selectionPeerChanged;
 
         ObservableCollection<PeerAppInfo> _peerApps;    // A local copy of peer app information
         StreamSocket _socket;                           // The socket object used to communicate with a peer
@@ -146,11 +147,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         public DelegateCommand onNavigateFrom
         {
             get { return _onNavigateFrom; }
-        }
-
-        public DelegateCommand selectionPeerChanged
-        {
-            get { return _selectionPeerChanged; }
         }
 
         public string TXT_PEER_Text
@@ -451,9 +447,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             }
             catch (Exception ex)
             {
-                // In this sample, we handle each exception by displaying it and
-                // closing any outstanding connection. An exception can occur here if, for example, 
-                // the connection was refused, the connection timeout etc.
                 MessageBox.Show(ex.Message);
                 CloseConnection(false);
             }
@@ -472,7 +465,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                     OpponentSigleChoice = choice;
                 }
 
-                // Start listening for the opponent choice
                 ListenForOpponentChoice();
             }
             catch (Exception ex)
@@ -499,6 +491,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 CloseConnection(true);
             }
         }
+
         /// <summary>
         /// Réception du choix de l'adversaire (afin de l'afficher)
         /// </summary>
@@ -542,16 +535,31 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// <param name="choice"></param>
         private async void SendChoice(string choice)
         {
+            if (choice != null)
+            {
+                if (_dataWriter == null)
+                    _dataWriter = new DataWriter(_socket.OutputStream);
+
+                // The first is the size of the choice.
+                _dataWriter.WriteInt32(choice.Length);
+                await _dataWriter.StoreAsync();
+
+                // The second if the choice itself.
+                _dataWriter.WriteString(choice);
+                await _dataWriter.StoreAsync();
+            }
+        }
+        private async void SetTimerState()
+        {
             if (_dataWriter == null)
                 _dataWriter = new DataWriter(_socket.OutputStream);
 
-            // Each message is sent in two blocks.
-            // The first is the size of the message.
-            // The second if the message itself.
-            _dataWriter.WriteInt32(choice.Length);
+            // The first is the size of the timerState.
+            _dataWriter.WriteInt32("true".Length);
             await _dataWriter.StoreAsync();
 
-            _dataWriter.WriteString(choice);
+            // The second if the timerState itself.
+            _dataWriter.WriteString("true");
             await _dataWriter.StoreAsync();
         }
 		private async void SetTimerState()
@@ -723,10 +731,9 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// <summary>
         /// Décompte du Timer
         /// </summary>
-        /// <param name="state"></param>
-        private void Timer_Tick(object state)
+        void _DispatchTimer_Tick(object sender, EventArgs e)
         {
-            Deployment.Current.Dispatcher.BeginInvoke(() =>
+            if (CountDown > 0)
             {
                 if (CountDown > 0)
                 {
@@ -740,7 +747,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                     SendChoice(MySigleChoice);
                 }
                 CountDown = CountDown;
-            });
+            }
         }
 		/// <summary>
         /// Décompte du Timer
@@ -771,7 +778,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             if (isResetTimerEnabled)
             {
                 CountDown = 3;
-                CountDown = CountDown;
                 isTimerEnabled = true;
                 MyChoice = null;
                 OpponentChoice = null;

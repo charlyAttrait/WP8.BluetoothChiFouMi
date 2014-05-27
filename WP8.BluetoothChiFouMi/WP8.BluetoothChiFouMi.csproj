@@ -123,6 +123,7 @@
     <Content Include="Assets\ApplicationIcon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\logo.png" />
     <Content Include="Assets\SIGLES\Left_Chi.png" />
     <Content Include="Assets\SIGLES\Left_Mi.png" />
     <Content Include="Assets\SIGLES\Left_Fou.png" />
