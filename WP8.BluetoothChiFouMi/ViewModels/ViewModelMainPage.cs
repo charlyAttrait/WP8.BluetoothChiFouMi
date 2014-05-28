@@ -747,7 +747,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         {
             if (canShowMessageBox)
 	        {
-		        MessageBoxResult result = MessageBox.Show("Voulez-vous continuez la partie ?", "Revanche", MessageBoxButton.);
+		        MessageBoxResult result = MessageBox.Show("Voulez-vous continuez la partie ?", "Revanche", MessageBoxButton.OKCancel);
                 if (result == MessageBoxResult.OK)
                 {
                     ResetTimer();

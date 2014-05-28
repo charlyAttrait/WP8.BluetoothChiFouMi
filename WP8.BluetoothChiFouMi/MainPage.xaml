@@ -63,7 +63,12 @@
 
             <!--PAGE DE JEU-->
             <phone:PivotItem Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.GamePageName}"
-                             Visibility="{Binding isGameVisible, Mode=TwoWay}" Tap="{Binding GetUserAnswer}">
+                             Visibility="{Binding isGameVisible, Mode=TwoWay}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Tap" >
+                        <i:InvokeCommandAction Command="{Binding GetUserAnswer}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
