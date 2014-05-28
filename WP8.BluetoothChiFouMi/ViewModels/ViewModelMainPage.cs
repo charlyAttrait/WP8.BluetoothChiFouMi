@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -344,7 +345,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             _GetUserAnswer = new DelegateCommand(ExecuteGetUserAnswer);
 
             _Records = new ObservableCollection<Score>();
-            //_Records.GroupBy(sc => sc.DatePartie);
+            _Records.GroupBy(sc => sc.DatePartie);
             ListRecords = _Records;
             fillRecordsTab(true);
 
@@ -490,7 +491,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                     }
                     else if (result == "reset")
                     {
-                        ResetTimer();
+                        ResetTimer(true);
                     }
                     else // Sinon il s'agit du choix de l'adversaire
                     {
@@ -730,9 +731,12 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// Reinitialise le Timer du Jeu
         /// </summary>
         /// <param name="parameter"></param>
-        public void ResetTimer()
+        public void ResetTimer(Boolean sendResetTimer)
         {
-            SendResult("", "reset");
+            if (sendResetTimer)
+            {
+                SendResult("", "reset");
+            }
 
             CountDown = 3;
             isTimerEnabled = true;
@@ -750,14 +754,14 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 		        MessageBoxResult result = MessageBox.Show("Voulez-vous continuez la partie ?", "Revanche", MessageBoxButton.OKCancel);
                 if (result == MessageBoxResult.OK)
                 {
-                    ResetTimer();
+                    ResetTimer(false);
                 }
                 else
                 {
                     CloseConnection(true);
                 }
 	        }
-            
+            canShowMessageBox = false;
         }
 
         /// <summary>
