@@ -76,7 +76,7 @@ namespace WP8.BluetoothChiFouMi
         {
             return this._Joueur1 + ";" + this._VictoiresJoueur1 + ";" +
                             this._VictoiresJoueur2 + ";" + this._Joueur2 + ";" +
-                            this._DatePartie.ToString() + "\n";
+                            this._DatePartie.ToString();
         }
     }
 }

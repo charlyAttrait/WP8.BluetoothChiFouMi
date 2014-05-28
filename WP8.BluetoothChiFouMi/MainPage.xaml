@@ -129,11 +129,7 @@
             </phone:PivotItem>
 
             <!--PAGE DES SCORES-->
-            <phone:PivotItem Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.RecordsPageName}">
-                <phone:PivotItem.DataContext>
-                    <model:ViewModelMainPage />
-                </phone:PivotItem.DataContext>
-                
+            <phone:PivotItem Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.RecordsPageName}">                
                 <ListBox ItemsSource="{Binding ListRecords, Mode=TwoWay}">
                     <!--<ListBox.ItemTemplate>
                         <DataTemplate>

@@ -31,12 +31,12 @@ namespace WP8.BluetoothChiFouMi
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            ViewModels.ViewModelMainPage.ViewModel.OnNavigatedTo(null);
+            ((ViewModels.ViewModelMainPage)this.DataContext).OnNavigatedTo(null);
         }
         protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
         {
             base.OnNavigatingFrom(e);
-            ViewModels.ViewModelMainPage.ViewModel.OnNavigatingFrom(null);
+            ((ViewModels.ViewModelMainPage)this.DataContext).OnNavigatingFrom(null);
         }
     }
 }

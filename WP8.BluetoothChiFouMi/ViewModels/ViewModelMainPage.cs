@@ -75,12 +75,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         private IEnumerable _ListRecords;
         private ObservableCollection<Score> _Records; // Liste des scores
 
-        private static ViewModelMainPage _ViewModel;
-        public static ViewModelMainPage ViewModel
-        {
-            get { return _ViewModel; }
-        }
-
         #endregion
 
         #region Properties
@@ -99,9 +93,9 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         }
         public string OpponentPseudo
         {
-            get 
+            get
             {
-                return _OpponentPseudo; 
+                return _OpponentPseudo;
             }
             set
             {
@@ -125,7 +119,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 }
             }
         }
-		public Visibility isTimerVisible
+        public Visibility isTimerVisible
         {
             get { return _isTimerVisible; }
             set
@@ -150,7 +144,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         {
             get { return _onNavigateTo; }
         }
-
         public DelegateCommand onNavigateFrom
         {
             get { return _onNavigateFrom; }
@@ -192,7 +185,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 }
             }
         }
-		public int SelectedPivotItem
+        public int SelectedPivotItem
         {
             get { return _SelectedPivotItem; }
             set
@@ -358,7 +351,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             _ResetTimer = new DelegateCommand(ExecuteResetTimer);
 
             _Records = new ObservableCollection<Score>();
-            _Records.GroupBy(sc => sc.DatePartie);
+            //_Records.GroupBy(sc => sc.DatePartie);
             ListRecords = _Records;
             fillRecordsTab(true);
 
@@ -366,8 +359,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             CountDown = 3;
             isGameVisible = Visibility.Collapsed;
             isTimerVisible = Visibility.Collapsed;
-
-            _ViewModel = this;
         }
 
         #endregion
@@ -473,9 +464,9 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 PeerFinder.Stop();
 
                 _peerName = peer.DisplayName;
- 
+
                 Listen();
-				
+
                 OpponentPseudo = peer.DisplayName;
 
                 isGameVisible = Visibility.Visible;
@@ -578,10 +569,11 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// <param name="continueAdvertise"></param>
         private void CloseConnection(bool continueAdvertise)
         {
+            Records.Add(_CurrentScore);
+            fillRecordsTab(false);
+
             if (_socket != null)
             {
-                Records.Add(_CurrentScore);
-                fillRecordsTab(false);
                 _socket.Dispose();
                 _socket = null;
                 isGameVisible = Visibility.Collapsed;
@@ -722,7 +714,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             isTimerVisible = Visibility.Visible;
         }
 
-		/// <summary>
+        /// <summary>
         /// Décompte du Timer
         /// </summary>
         void _DispatchTimer_Tick(object sender, EventArgs e)
@@ -817,31 +809,29 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                     // Reading Records File
                     using (StreamReader streamReader = new StreamReader(file.Path))
                     {
-                        line = streamReader.ReadLine();
-                        if (line != null)
+                        do
                         {
-                            tab = line.Split(';');
-                            Records.Add(new Score(tab[0], int.Parse(tab[1]), int.Parse(tab[2]), tab[3], DateTime.Parse(tab[4])));
+                            line = streamReader.ReadLine();
+                            if (!string.IsNullOrWhiteSpace(line))
+                            {
+                                tab = line.Split(';');
+                                if (tab.Length == 5)
+                                {
+                                    Records.Add(new Score(tab[0], int.Parse(tab[1]), int.Parse(tab[2]), tab[3], DateTime.Parse(tab[4])));
+                                }
+                            }
                         }
+                        while (!String.IsNullOrWhiteSpace(line));
                     }
                 }
-                else // ECRITUTE D'UN SCORE
+                else // ECRITURE D'UN SCORE
                 {
-                    // Vider le fichier des scores, pour le remplir à nouveau au complet
-
-
-                    string records = "";
-                    foreach (Score score in Records)
+                    using (StreamWriter streamWriter = new StreamWriter(file.Path))
                     {
-                        records += score.ToString();
-                    }
-                    // Ecrire le record sous forme d'un tableau de byte
-                    byte[] fileBytes = System.Text.Encoding.UTF8.GetBytes(records);
-
-                    // Ecriture dans le fichier
-                    using (var line = await file.OpenStreamForWriteAsync())
-                    {
-                        line.Write(fileBytes, 0, fileBytes.Length);
+                        foreach (Score score in Records)
+                        {
+                            streamWriter.WriteLine(score);
+                        }
                     }
                 }
             }
