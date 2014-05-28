@@ -65,9 +65,9 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         private string _MySigleChoice;
         private ImageSource _OpponentChoice; // Récupération du choix de l'adversaire
         private string _OpponentSigleChoice;
+        private ImageSource _Result; // Image résultat
 
         private DispatcherTimer _DispatchTimer;
-        private System.Threading.Timer _Timer;
         private int _CountDown; // Valeur à afficher
         private Boolean _isTimerEnabled; // Booleen pour vérrouiller le bouton de lancement du Timer
         private Boolean _isResetTimerEnabled; // Boolean pour vérouiller le bouton de réinitialisation du Timer
@@ -251,6 +251,19 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                     onPropertyChanged();
                     OpponentChoice = new BitmapImage(
                         new Uri("/Assets/SIGLES/Right_" + _OpponentSigleChoice + ".png", UriKind.Relative));
+                }
+            }
+        }
+
+        public ImageSource Result
+        {
+            get { return _Result; }
+            set
+            {
+                if (_Result != value)
+                {
+                    _Result = value;
+                    onPropertyChanged();
                 }
             }
         }
@@ -663,11 +676,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// <param name="parameter"></param>
         public void ExecuteStartTimer(object parameter)
         {
-            //CountDown = 3;
-            //_Timer = new System.Threading.Timer(new System.Threading.TimerCallback(Timer_Tick), null, 1000, 1000);
-            //isTimerEnabled = false;
-            //isResetTimerEnabled = false;
-            //isTimerVisible = Visibility.Visible;
             if (parameter == null)
             {
                 SendResult("", true);
@@ -684,28 +692,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             isTimerVisible = Visibility.Visible;
         }
 
-        /// <summary>
-        /// Décompte du Timer
-        /// </summary>
-        /// <param name="state"></param>
-        private void Timer_Tick(object state)
-        {
-            Deployment.Current.Dispatcher.BeginInvoke(() =>
-            {
-                if (CountDown > 0)
-                {
-                    CountDown--;
-                }
-                else
-                {
-                    isResetTimerEnabled = true;
-                    _Timer.Dispose();
-                    _Timer = null;
-                    SendResult(MySigleChoice, false);
-                }
-                CountDown = CountDown;
-            });
-        }
 		/// <summary>
         /// Décompte du Timer
         /// </summary>
@@ -738,6 +724,29 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 isTimerEnabled = true;
                 MyChoice = null;
                 OpponentChoice = null;
+                CalculChiFouMi();
+            }
+        }
+
+        /// <summary>
+        /// // Comparaison du résultat de chaque joueur pour déterminer le gagnant
+        /// </summary>
+        public void CalculChiFouMi()
+        {
+            if (MySigleChoice == "Chi" && OpponentSigleChoice == "Chi" || MySigleChoice == "Fou" && OpponentSigleChoice == "Fou" || MySigleChoice == "Mi" && OpponentSigleChoice == "Mi")
+            {
+                Result = new BitmapImage(
+                        new Uri("/Assets/RESULT/Equality.png", UriKind.Relative));
+            }
+            else if (MySigleChoice == "Chi" && OpponentSigleChoice == "Fou" || MySigleChoice == "Fou" && OpponentSigleChoice == "Mi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Chi")
+            {
+                Result = new BitmapImage(
+                        new Uri("/Assets/RESULT/Lose.png", UriKind.Relative));
+            }
+            else if (MySigleChoice == "Chi" && OpponentSigleChoice == "Mi" || MySigleChoice == "Fou" && OpponentSigleChoice == "Chi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Fou")
+            {
+                Result = new BitmapImage(
+                        new Uri("/Assets/RESULT/Win.png", UriKind.Relative));
             }
         }
 

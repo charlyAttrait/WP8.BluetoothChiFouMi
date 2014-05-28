@@ -124,6 +124,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\logo.png" />
+    <Content Include="Assets\RESULT\Equality.png" />
+    <Content Include="Assets\RESULT\Win.png" />
+    <Content Include="Assets\RESULT\Lose.png" />
     <Content Include="Assets\SIGLES\Left_Chi.png" />
     <Content Include="Assets\SIGLES\Left_Mi.png" />
     <Content Include="Assets\SIGLES\Left_Fou.png" />
