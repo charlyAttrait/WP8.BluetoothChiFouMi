@@ -103,6 +103,7 @@ namespace WP8.BluetoothChiFouMi
         // Ce code ne s'exécute pas lorsque l'application est désactivée
         private void Application_Closing(object sender, ClosingEventArgs e)
         {
+            
         }
 
         // Code à exécuter en cas d'échec d'une navigation

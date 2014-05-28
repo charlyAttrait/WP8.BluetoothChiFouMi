@@ -75,6 +75,12 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         private IEnumerable _ListRecords;
         private ObservableCollection<Score> _Records; // Liste des scores
 
+        private static ViewModelMainPage _ViewModel;
+        public static ViewModelMainPage ViewModel
+        {
+            get { return _ViewModel; }
+        }
+
         #endregion
 
         #region Properties
@@ -360,6 +366,8 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             CountDown = 3;
             isGameVisible = Visibility.Collapsed;
             isTimerVisible = Visibility.Collapsed;
+
+            _ViewModel = this;
         }
 
         #endregion
@@ -510,7 +518,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
                 CloseConnection(true);
             }
         }
@@ -573,6 +580,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         {
             if (_socket != null)
             {
+                Records.Add(_CurrentScore);
                 fillRecordsTab(false);
                 _socket.Dispose();
                 _socket = null;
@@ -684,7 +692,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// <param name="parameter">Signe Chi/Fou/Mi choisi par l'utilisateur</param>
         public void ExecuteChoiceCommand(object parameter)
         {
-            if (CountDown == 0 && _DispatchTimer != null && MyChoice == null)
+            if (CountDown == 0 && _DispatchTimer != null)
             {
                 MySigleChoice = parameter.ToString();
             }
@@ -819,12 +827,13 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 }
                 else // ECRITUTE D'UN SCORE
                 {
+                    // Vider le fichier des scores, pour le remplir à nouveau au complet
+
+
                     string records = "";
                     foreach (Score score in Records)
                     {
-                        records += score.Joueur1 + ";" + score.VictoiresJoueur1 + ";" + 
-                            score.VictoiresJoueur2 + ";" + score.Joueur2 + ";" + 
-                            score.DatePartie.ToString() + "\n";
+                        records += score.ToString();
                     }
                     // Ecrire le record sous forme d'un tableau de byte
                     byte[] fileBytes = System.Text.Encoding.UTF8.GetBytes(records);

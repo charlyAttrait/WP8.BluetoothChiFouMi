@@ -27,5 +27,16 @@ namespace WP8.BluetoothChiFouMi
 
             SystemTray.SetProgressIndicator(this, new ProgressIndicator());
         }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            ViewModels.ViewModelMainPage.ViewModel.OnNavigatedTo(null);
+        }
+        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+        {
+            base.OnNavigatingFrom(e);
+            ViewModels.ViewModelMainPage.ViewModel.OnNavigatingFrom(null);
+        }
     }
 }

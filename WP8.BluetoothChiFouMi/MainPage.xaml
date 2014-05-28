@@ -26,15 +26,6 @@
                      SelectedIndex="{Binding SelectedPivotItem, Mode=TwoWay}">
             <!--PAGE D'ACCUEIL (pseudo + bluetooth connection)-->
             <phone:PivotItem Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.WelcomePageName}">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="Loaded" >
-                        <i:InvokeCommandAction Command="{Binding onNavigateTo}" />
-                    </i:EventTrigger>
-                    <i:EventTrigger EventName="UnLoaded" >
-                        <i:InvokeCommandAction Command="{Binding onNavigateFrom}" />
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-                
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -45,7 +36,7 @@
                     </Grid.RowDefinitions>
                     <StackPanel Grid.Row="0">
                         <TextBlock Text="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.UserPseudoText}"/>
-                        <TextBox x:Name="TXTBOX_PSEUDO" Text="{Binding Path=UserPseudo, Mode=TwoWay}" />
+                        <TextBox x:Name="TXTBOX_PSEUDO" Text="{Binding Path=UserPseudo, Mode=TwoWay}" MaxLength="15" />
                     </StackPanel>
                     <Button x:Name="BT_FIND_PEERS" Grid.Row="1" Content="{Binding Path=LocalizedResources.FindButtonCaption, Source={StaticResource LocalizedStrings}}" 
                             Command="{Binding refreshDevicesCommand}" Margin="10,0,0,0"/>
@@ -90,11 +81,11 @@
                         <ColumnDefinition Width="15*" />
                     </Grid.ColumnDefinitions>
                     
-                    <TextBlock Text="{Binding UserPseudo}" Grid.Row="0"  Grid.ColumnSpan="2" 
+                    <TextBlock Text="{Binding UserPseudo}" Grid.Row="0"  Grid.ColumnSpan="2" HorizontalAlignment="Center"
                                Style="{StaticResource PhoneTextLargeStyle}" />
                     <TextBlock Text="VS" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" 
                                Style="{StaticResource PhoneTextExtraLargeStyle}" />
-                    <TextBlock Text="{Binding OpponentPseudo}" Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Right" 
+                    <TextBlock Text="{Binding OpponentPseudo}" Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" 
                                Style="{StaticResource PhoneTextLargeStyle}" />
 
                     <Image Grid.Row="2" Grid.ColumnSpan="2" Source="{Binding MyChoice, Mode=TwoWay}" />
@@ -104,7 +95,7 @@
                     <TextBlock Text="{Binding CountDown}" Grid.Row="2" Grid.ColumnSpan="5" HorizontalAlignment="Center" 
                                FontSize="250" FontWeight="Light" Foreground="Red" Visibility="{Binding isTimerVisible}"/>
 
-                    <Button Content="Start" Grid.Row="3" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" 
+                    <Button Content="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.ButtonPlay}" Grid.Row="3" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" 
                             IsEnabled="{Binding isTimerEnabled}" Command="{Binding StartTimer}" />
                     <Button Content="¤" Grid.Row="3" Grid.Column="5" HorizontalAlignment="Stretch"
                             Command="{Binding ResetTimer}" IsEnabled="{Binding isResetTimerEnabled}" />

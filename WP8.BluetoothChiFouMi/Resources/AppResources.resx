@@ -188,4 +188,7 @@
   <data name="ResearchPeers" xml:space="preserve">
     <value>Scan Environnement ...</value>
   </data>
+  <data name="ButtonPlay" xml:space="preserve">
+    <value>Jouer</value>
+  </data>
 </root>
