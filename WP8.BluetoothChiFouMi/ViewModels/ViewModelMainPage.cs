@@ -58,7 +58,8 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
         private DelegateCommand _ChoiceCommand; // Command du choix de signe (Pierre, Papier, Ciseaux)
         private DelegateCommand _StartTimer; // Command de démarrage du Timer
-        private DelegateCommand _ResetTimer; // Command de réinitialisation du Timer
+        private DelegateCommand _GetUserAnswer; // Réponse utilisateur (continuer partie/quitter partie)
+        private Boolean canShowMessageBox;
 
         private ImageSource _MyChoice; // Récupération du choix de l'utilisateur
         private string _MySigleChoice;
@@ -69,7 +70,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         private DispatcherTimer _DispatchTimer;
         private int _CountDown; // Valeur à afficher
         private Boolean _isTimerEnabled; // Booleen pour vérrouiller le bouton de lancement du Timer
-        private Boolean _isResetTimerEnabled; // Boolean pour vérouiller le bouton de réinitialisation du Timer
 
         private Score _CurrentScore;
         private IEnumerable _ListRecords;
@@ -87,6 +87,9 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 if (value != App.UserPseudo)
                 {
                     App.UserPseudo = value;
+                    PeerFinder.Stop();
+                    PeerFinder.DisplayName = App.UserPseudo;
+                    PeerFinder.Start();
                     onPropertyChanged();
                 }
             }
@@ -304,27 +307,16 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 }
             }
         }
-        public Boolean isResetTimerEnabled
-        {
-            get { return _isResetTimerEnabled; }
-            set
-            {
-                if (_isResetTimerEnabled != value)
-                {
-                    _isResetTimerEnabled = value;
-                    onPropertyChanged();
-                }
-            }
-        }
         public DelegateCommand StartTimer
         {
             get { return _StartTimer; }
             set { _StartTimer = value; }
         }
-        public DelegateCommand ResetTimer
+
+        public DelegateCommand GetUserAnswer
         {
-            get { return _ResetTimer; }
-            set { _ResetTimer = value; }
+            get { return _GetUserAnswer; }
+            set { _GetUserAnswer = value; }
         }
 
         ObservableCollection<Score> Records
@@ -348,7 +340,8 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             _ChoiceCommand = new DelegateCommand(ExecuteChoiceCommand);
 
             _StartTimer = new DelegateCommand(ExecuteStartTimer);
-            _ResetTimer = new DelegateCommand(ExecuteResetTimer);
+
+            _GetUserAnswer = new DelegateCommand(ExecuteGetUserAnswer);
 
             _Records = new ObservableCollection<Score>();
             //_Records.GroupBy(sc => sc.DatePartie);
@@ -356,6 +349,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             fillRecordsTab(true);
 
             isTimerEnabled = true;
+            canShowMessageBox = false;
             CountDown = 3;
             isGameVisible = Visibility.Collapsed;
             isTimerVisible = Visibility.Collapsed;
@@ -496,12 +490,13 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                     }
                     else if (result == "reset")
                     {
-                        ExecuteResetTimer("");
+                        ResetTimer();
                     }
                     else // Sinon il s'agit du choix de l'adversaire
                     {
                         OpponentSigleChoice = result;
                         CalculChiFouMi();
+                        canShowMessageBox = true;
                     }
                 }
 
@@ -710,7 +705,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             _DispatchTimer.Start();
 
             isTimerEnabled = false;
-            isResetTimerEnabled = false;
             isTimerVisible = Visibility.Visible;
         }
 
@@ -726,7 +720,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             else
             {
                 isTimerVisible = Visibility.Collapsed;
-                isResetTimerEnabled = true;
                 _DispatchTimer.Stop();
                 _DispatchTimer = null;
                 SendResult(MySigleChoice, null);
@@ -737,24 +730,34 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// Reinitialise le Timer du Jeu
         /// </summary>
         /// <param name="parameter"></param>
-        public void ExecuteResetTimer(object parameter)
+        public void ResetTimer()
         {
-            // Si le Timer est terminé, on peut le réinitialiser
-            if (isResetTimerEnabled)
-            {
-                if (parameter == null)
-                {
-                    SendResult("", "reset");
-                }
+            SendResult("", "reset");
 
-                CountDown = 3;
-                isTimerEnabled = true;
-                MyChoice = null;
-                OpponentChoice = null;
-                Result = null;
-                MySigleChoice = null;
-                OpponentSigleChoice = null;
-            }
+            CountDown = 3;
+            isTimerEnabled = true;
+            MyChoice = null;
+            OpponentChoice = null;
+            Result = null;
+            MySigleChoice = null;
+            OpponentSigleChoice = null;
+        }
+
+        public void ExecuteGetUserAnswer(object parameter)
+        {
+            if (canShowMessageBox)
+	        {
+		        MessageBoxResult result = MessageBox.Show("Voulez-vous continuez la partie ?", "Revanche", MessageBoxButton.);
+                if (result == MessageBoxResult.OK)
+                {
+                    ResetTimer();
+                }
+                else
+                {
+                    CloseConnection(true);
+                }
+	        }
+            
         }
 
         /// <summary>

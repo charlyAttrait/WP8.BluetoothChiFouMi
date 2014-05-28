@@ -38,5 +38,10 @@ namespace WP8.BluetoothChiFouMi
             base.OnNavigatingFrom(e);
             ((ViewModels.ViewModelMainPage)this.DataContext).OnNavigatingFrom(null);
         }
+
+        private void PivotItem_Tap(object sender, GestureEventArgs e)
+        {
+
+        }
     }
 }

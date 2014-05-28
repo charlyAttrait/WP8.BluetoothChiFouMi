@@ -63,7 +63,7 @@
 
             <!--PAGE DE JEU-->
             <phone:PivotItem Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.GamePageName}"
-                             Visibility="{Binding isGameVisible, Mode=TwoWay}">
+                             Visibility="{Binding isGameVisible, Mode=TwoWay}" Tap="{Binding GetUserAnswer}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -95,10 +95,8 @@
                     <TextBlock Text="{Binding CountDown}" Grid.Row="2" Grid.ColumnSpan="5" HorizontalAlignment="Center" 
                                FontSize="250" FontWeight="Light" Foreground="Red" Visibility="{Binding isTimerVisible}"/>
 
-                    <Button Content="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.ButtonPlay}" Grid.Row="3" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" 
+                    <Button Content="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.ButtonPlay}" Grid.Row="3" Grid.ColumnSpan="5" HorizontalAlignment="Stretch" 
                             IsEnabled="{Binding isTimerEnabled}" Command="{Binding StartTimer}" />
-                    <Button Content="¤" Grid.Row="3" Grid.Column="5" HorizontalAlignment="Stretch"
-                            Command="{Binding ResetTimer}" IsEnabled="{Binding isResetTimerEnabled}" />
 
                     <Image Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Center" 
                            Source="/Assets/SIGLES/Left_Chi.png">
