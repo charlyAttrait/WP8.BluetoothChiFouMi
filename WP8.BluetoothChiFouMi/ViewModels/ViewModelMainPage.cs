@@ -55,7 +55,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         private Visibility _isGameVisible;
         private Visibility _isTimerVisible;
 
-        private Score _CurrentScore;
 
         private DelegateCommand _ChoiceCommand; // Command du choix de signe (Pierre, Papier, Ciseaux)
         private DelegateCommand _StartTimer; // Command de démarrage du Timer
@@ -72,6 +71,8 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         private Boolean _isTimerEnabled; // Booleen pour vérrouiller le bouton de lancement du Timer
         private Boolean _isResetTimerEnabled; // Boolean pour vérouiller le bouton de réinitialisation du Timer
 
+        private Score _CurrentScore;
+        private IEnumerable _ListRecords;
         private ObservableCollection<Score> _Records; // Liste des scores
 
         #endregion
@@ -197,6 +198,18 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 }
             }
         }
+        public IEnumerable ListRecords
+        {
+            get { return _ListRecords; }
+            set
+            {
+                if (_ListRecords != value)
+                {
+                    _ListRecords = value;
+                    onPropertyChanged();
+                }
+            }
+        }
 
         public DelegateCommand ChoiceCommand
         {
@@ -315,7 +328,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             set { _ResetTimer = value; }
         }
 
-        public ObservableCollection<Score> Records
+        ObservableCollection<Score> Records
         {
             get { return _Records; }
             set { _Records = value; }
@@ -339,6 +352,9 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             _ResetTimer = new DelegateCommand(ExecuteResetTimer);
 
             _Records = new ObservableCollection<Score>();
+            _Records.GroupBy(sc => sc.DatePartie);
+            ListRecords = _Records;
+            fillRecordsTab(true);
 
             isTimerEnabled = true;
             CountDown = 3;
@@ -474,14 +490,19 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 var result = await GetResult();
                 if (result != "")
                 {
-                    // Si le résultat est "true", il s'agit d'executer le Timer car l'adversaire l'a lancé
-                    if (result == "true")
+                    // Si le résultat est "init", il s'agit d'executer le Timer car l'adversaire l'a lancé
+                    if (result == "init")
                     {
                         ExecuteStartTimer("");
+                    }
+                    else if (result == "reset")
+                    {
+                        ExecuteResetTimer("");
                     }
                     else // Sinon il s'agit du choix de l'adversaire
                     {
                         OpponentSigleChoice = result;
+                        CalculChiFouMi();
                     }
                 }
 
@@ -518,14 +539,14 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// </summary>
         /// <param name="result"></param>
         /// <param name="initTimer"></param>
-        private async void SendResult(string result, Boolean initTimer)
+        private async void SendResult(string result, string timerState)
         {
             string toSend = "";
 
             // il s'agit d'envoyer la requête de démarrage du Timer de l'adversaire
-            if (initTimer)
+            if (timerState == "init" || timerState == "reset")
             {
-                toSend = "true";
+                toSend = timerState;
             }
             else if (result != null) // Envoi du choix de l'utilisateur
             {
@@ -552,6 +573,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         {
             if (_socket != null)
             {
+                fillRecordsTab(false);
                 _socket.Dispose();
                 _socket = null;
                 isGameVisible = Visibility.Collapsed;
@@ -678,7 +700,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         {
             if (parameter == null)
             {
-                SendResult("", true);
+                SendResult("", "init");
             }
 
             CountDown = 3;
@@ -707,7 +729,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 isResetTimerEnabled = true;
                 _DispatchTimer.Stop();
                 _DispatchTimer = null;
-                SendResult(MySigleChoice, false);
+                SendResult(MySigleChoice, null);
             }
         }
 
@@ -720,11 +742,18 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             // Si le Timer est terminé, on peut le réinitialiser
             if (isResetTimerEnabled)
             {
+                if (parameter == null)
+                {
+                    SendResult("", "reset");
+                }
+
                 CountDown = 3;
                 isTimerEnabled = true;
                 MyChoice = null;
                 OpponentChoice = null;
-                CalculChiFouMi();
+                Result = null;
+                MySigleChoice = null;
+                OpponentSigleChoice = null;
             }
         }
 
@@ -733,20 +762,24 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// </summary>
         public void CalculChiFouMi()
         {
+            if (_CurrentScore == null)
+            {
+                _CurrentScore = new Score(UserPseudo, OpponentPseudo, DateTime.Today);
+            }
+
             if (MySigleChoice == "Chi" && OpponentSigleChoice == "Chi" || MySigleChoice == "Fou" && OpponentSigleChoice == "Fou" || MySigleChoice == "Mi" && OpponentSigleChoice == "Mi")
             {
-                Result = new BitmapImage(
-                        new Uri("/Assets/RESULT/Equality.png", UriKind.Relative));
+                Result = new BitmapImage(new Uri("/Assets/RESULT/Equality.png", UriKind.Relative));
             }
             else if (MySigleChoice == "Chi" && OpponentSigleChoice == "Fou" || MySigleChoice == "Fou" && OpponentSigleChoice == "Mi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Chi")
             {
-                Result = new BitmapImage(
-                        new Uri("/Assets/RESULT/Lose.png", UriKind.Relative));
+                Result = new BitmapImage(new Uri("/Assets/RESULT/Lose.png", UriKind.Relative));
+                _CurrentScore.VictoiresJoueur2++;
             }
             else if (MySigleChoice == "Chi" && OpponentSigleChoice == "Mi" || MySigleChoice == "Fou" && OpponentSigleChoice == "Chi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Fou")
             {
-                Result = new BitmapImage(
-                        new Uri("/Assets/RESULT/Win.png", UriKind.Relative));
+                Result = new BitmapImage(new Uri("/Assets/RESULT/Win.png", UriKind.Relative));
+                _CurrentScore.VictoiresJoueur1++;
             }
         }
 
@@ -756,7 +789,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// Remplissage du tableau des scores
         /// </summary>
         /// <param name="record"></param>
-        private async void fillRecordsTab(string record = "")
+        private async void fillRecordsTab(Boolean lecture)
         {
             // Dossier du fichier des scores
             StorageFolder local = Windows.Storage.ApplicationData.Current.LocalFolder;
@@ -769,20 +802,32 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 // OUVRIR / CREER le fichier des scores
                 var file = await dataFolder.CreateFileAsync("Records.txt", CreationCollisionOption.OpenIfExists);
 
-                if (record == "") // LECTURE DES SCORES
+                if (lecture) // LECTURE DES SCORES
                 {
                     string[] tab = null;
+                    string line = null;
                     // Reading Records File
                     using (StreamReader streamReader = new StreamReader(file.Path))
                     {
-                        tab = streamReader.ReadLine().Split(';');
-                        Records.Add(new Score(tab[0], int.Parse(tab[1]), int.Parse(tab[2]), tab[3]));
+                        line = streamReader.ReadLine();
+                        if (line != null)
+                        {
+                            tab = line.Split(';');
+                            Records.Add(new Score(tab[0], int.Parse(tab[1]), int.Parse(tab[2]), tab[3], DateTime.Parse(tab[4])));
+                        }
                     }
                 }
                 else // ECRITUTE D'UN SCORE
                 {
+                    string records = "";
+                    foreach (Score score in Records)
+                    {
+                        records += score.Joueur1 + ";" + score.VictoiresJoueur1 + ";" + 
+                            score.VictoiresJoueur2 + ";" + score.Joueur2 + ";" + 
+                            score.DatePartie.ToString() + "\n";
+                    }
                     // Ecrire le record sous forme d'un tableau de byte
-                    byte[] fileBytes = System.Text.Encoding.UTF8.GetBytes(record);
+                    byte[] fileBytes = System.Text.Encoding.UTF8.GetBytes(records);
 
                     // Ecriture dans le fichier
                     using (var line = await file.OpenStreamForWriteAsync())

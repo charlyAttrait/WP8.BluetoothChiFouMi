@@ -142,14 +142,24 @@
                 <phone:PivotItem.DataContext>
                     <model:ViewModelMainPage />
                 </phone:PivotItem.DataContext>
-                <Grid ShowGridLines="True">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="35*"/>
-                        <ColumnDefinition Width="15*"/>
-                        <ColumnDefinition Width="15*"/>
-                        <ColumnDefinition Width="35*"/>
-                    </Grid.ColumnDefinitions>
-                </Grid>
+                
+                <ListBox ItemsSource="{Binding ListRecords, Mode=TwoWay}">
+                    <!--<ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ShowGridLines="True">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="35*"/>
+                                    <ColumnDefinition Width="15*"/>
+                                    <ColumnDefinition Width="15*"/>
+                                    <ColumnDefinition Width="35*"/>
+                                </Grid.ColumnDefinitions>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>-->
+                    
+
+                </ListBox>
+                
             </phone:PivotItem>
         </phone:Pivot>
     </Grid>

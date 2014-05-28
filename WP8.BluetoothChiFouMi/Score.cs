@@ -14,7 +14,7 @@ namespace WP8.BluetoothChiFouMi
         private int _VictoiresJoueur1;
         private int _VictoiresJoueur2;
         private string _Joueur2;
-
+        private DateTime _DatePartie;
         #endregion
 
         #region Properties
@@ -43,16 +43,31 @@ namespace WP8.BluetoothChiFouMi
             set { _Joueur2 = value; }
         } 
 
+        public DateTime DatePartie
+        {
+            get { return _DatePartie; }
+            set { _DatePartie = value; }
+        }
+
         #endregion
 
         #region Constructors
 
-        public Score(string joueur1, int victoiresJ1, int victoiresJ2, string joueur2)
+        public Score(string joueur1, int victoiresJ1, int victoiresJ2, string joueur2, DateTime datePartie)
         {
             this._Joueur1 = joueur1;
             this._VictoiresJoueur1 = victoiresJ1;
             this._VictoiresJoueur2 = victoiresJ2;
             this._Joueur2 = joueur2;
+            this._DatePartie = datePartie;
+        }
+        public Score(string joueur1, string joueur2, DateTime datePartie)
+        {
+            this._Joueur1 = joueur1;
+            this._VictoiresJoueur1 = 0;
+            this._VictoiresJoueur2 = 0;
+            this._Joueur2 = joueur2;
+            this._DatePartie = datePartie;
         }
 
         #endregion
