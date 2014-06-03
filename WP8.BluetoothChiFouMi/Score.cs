@@ -71,12 +71,5 @@ namespace WP8.BluetoothChiFouMi
         }
 
         #endregion
-
-        public override string ToString()
-        {
-            return this._Joueur1 + ";" + this._VictoiresJoueur1 + ";" +
-                            this._VictoiresJoueur2 + ";" + this._Joueur2 + ";" +
-                            this._DatePartie.ToString();
-        }
     }
 }

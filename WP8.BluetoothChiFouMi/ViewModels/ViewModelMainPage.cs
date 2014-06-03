@@ -493,6 +493,10 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                     {
                         ResetTimer(true);
                     }
+                    else if (result == "OK" || result == "Cancel")
+                    {
+                        ExecuteGetUserAnswer(result);
+                    }
                     else // Sinon il s'agit du choix de l'adversaire
                     {
                         OpponentSigleChoice = result;
@@ -533,7 +537,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// </summary>
         /// <param name="result"></param>
         /// <param name="initTimer"></param>
-        private async void SendResult(string result, string timerState)
+        private async void SendResult(string result, string timerState, string continu)
         {
             string toSend = "";
 
@@ -541,6 +545,10 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             if (timerState == "init" || timerState == "reset")
             {
                 toSend = timerState;
+            }
+            else if (continu != "")
+            {
+                toSend = continu;
             }
             else if (result != null) // Envoi du choix de l'utilisateur
             {
@@ -696,7 +704,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         {
             if (parameter == null)
             {
-                SendResult("", "init");
+                SendResult("", "init", "");
             }
 
             CountDown = 3;
@@ -723,7 +731,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 isTimerVisible = Visibility.Collapsed;
                 _DispatchTimer.Stop();
                 _DispatchTimer = null;
-                SendResult(MySigleChoice, null);
+                SendResult(MySigleChoice, null, "");
             }
         }
 
@@ -735,7 +743,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         {
             if (sendResetTimer)
             {
-                SendResult("", "reset");
+                SendResult("", "reset", "");
             }
 
             CountDown = 3;
@@ -754,10 +762,17 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 		        MessageBoxResult result = MessageBox.Show("Voulez-vous continuez la partie ?", "Revanche", MessageBoxButton.OKCancel);
                 if (result == MessageBoxResult.OK)
                 {
+                    SendResult("", "", "OK");
+                    if (parameter.ToString() == "Cancel")
+                    {
+                        CloseConnection(true);
+                        return;
+                    }
                     ResetTimer(false);
                 }
                 else
                 {
+                    SendResult("", "", "Cancel");
                     CloseConnection(true);
                 }
 	        }

@@ -134,7 +134,7 @@
             <!--PAGE DES SCORES-->
             <phone:PivotItem Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.RecordsPageName}">                
                 <ListBox ItemsSource="{Binding ListRecords, Mode=TwoWay}">
-                    <!--<ListBox.ItemTemplate>
+                    <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Grid ShowGridLines="True">
                                 <Grid.ColumnDefinitions>
@@ -143,13 +143,15 @@
                                     <ColumnDefinition Width="15*"/>
                                     <ColumnDefinition Width="35*"/>
                                 </Grid.ColumnDefinitions>
+                                
+                                <TextBlock Text="{Binding Joueur1}" />
+                                <TextBlock Text="{Binding VictoiresJoueur1}" />
+                                <TextBlock Text="{Binding VictoiresJoueur2}" />
+                                <TextBlock Text="{Binding Joueur2}" />
                             </Grid>
                         </DataTemplate>
-                    </ListBox.ItemTemplate>-->
-                    
-
+                    </ListBox.ItemTemplate>
                 </ListBox>
-                
             </phone:PivotItem>
         </phone:Pivot>
     </Grid>
