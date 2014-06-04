@@ -407,7 +407,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// <param name="parameter"></param>
         private void ExecuteContinuGame(object parameter)
         {
-            if (canContinuGame)
+            if (canContinuGame && OpponentSigleChoice != null)
             {
                 ResetTimer(true);
             }
@@ -522,7 +522,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                         }
                         else if (result == "reset")
                         {
-                            ResetTimer(true);
+                            ResetTimer(false);
                         }
                         else // Sinon il s'agit du choix de l'adversaire
                         {
@@ -780,6 +780,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             Result = null;
             MySigleChoice = null;
             OpponentSigleChoice = null;
+            canContinuGame = false;
         }
 
         /// <summary>
