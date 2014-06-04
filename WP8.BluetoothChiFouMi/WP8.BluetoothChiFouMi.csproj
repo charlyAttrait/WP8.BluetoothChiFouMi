@@ -123,6 +123,7 @@
     <Content Include="Assets\ApplicationIcon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\Disconnect.png" />
     <Content Include="Assets\logo.png" />
     <Content Include="Assets\RESULT\Equality.png" />
     <Content Include="Assets\RESULT\Win.png" />

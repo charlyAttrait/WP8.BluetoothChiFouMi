@@ -34,12 +34,16 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
         private DelegateCommand _refreshDevicesCommand;
         private DelegateCommand _connectToDeviceCommand;
+        private DelegateCommand _DisconnectFromDevice;
+        private DelegateCommand _ContinuGame;
+        private Boolean canContinuGame;
         private DelegateCommand _onNavigateTo;
         private DelegateCommand _onNavigateFrom;
 
         ObservableCollection<PeerAppInfo> _peerApps;    // A local copy of peer app information
         StreamSocket _socket;                           // The socket object used to communicate with a peer
         string _peerName = string.Empty;                // The name of the current peer
+        Boolean stopListen = false;
 
         // Error code constants
         const uint ERR_BLUETOOTH_OFF = 0x8007048F;      // The Bluetooth radio is off
@@ -59,8 +63,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
         private DelegateCommand _ChoiceCommand; // Command du choix de signe (Pierre, Papier, Ciseaux)
         private DelegateCommand _StartTimer; // Command de démarrage du Timer
-        private DelegateCommand _GetUserAnswer; // Réponse utilisateur (continuer partie/quitter partie)
-        private Boolean canShowMessageBox;
 
         private ImageSource _MyChoice; // Récupération du choix de l'utilisateur
         private string _MySigleChoice;
@@ -143,6 +145,14 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         public DelegateCommand connectToDeviceCommand
         {
             get { return _connectToDeviceCommand; }
+        }
+        public DelegateCommand DisconnectFromDevice
+        {
+            get { return _DisconnectFromDevice; }
+        }
+        public DelegateCommand ContinuGame
+        {
+            get { return _ContinuGame; }
         }
         public DelegateCommand onNavigateTo
         {
@@ -314,12 +324,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             set { _StartTimer = value; }
         }
 
-        public DelegateCommand GetUserAnswer
-        {
-            get { return _GetUserAnswer; }
-            set { _GetUserAnswer = value; }
-        }
-
         ObservableCollection<Score> Records
         {
             get { return _Records; }
@@ -334,6 +338,9 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         {
             _refreshDevicesCommand = new DelegateCommand(ExecuteRefreshDevicesCommand);
             _connectToDeviceCommand = new DelegateCommand(ExecuteConnectToDeviceCommand);
+            _DisconnectFromDevice = new DelegateCommand(ExecuteDisconnectFromDevice);
+            _ContinuGame = new DelegateCommand(ExecuteContinuGame);
+            canContinuGame = false;
 
             _onNavigateTo = new DelegateCommand(OnNavigatedTo);
             _onNavigateFrom = new DelegateCommand(OnNavigatingFrom);
@@ -342,15 +349,12 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
             _StartTimer = new DelegateCommand(ExecuteStartTimer);
 
-            _GetUserAnswer = new DelegateCommand(ExecuteGetUserAnswer);
-
             _Records = new ObservableCollection<Score>();
             _Records.GroupBy(sc => sc.DatePartie);
             ListRecords = _Records;
             fillRecordsTab(true);
 
             isTimerEnabled = true;
-            canShowMessageBox = false;
             CountDown = 3;
             isGameVisible = Visibility.Collapsed;
             isTimerVisible = Visibility.Collapsed;
@@ -386,7 +390,28 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
             ConnectToPeer(peer);
         }
+        /// <summary>
+        /// Commande de déconnexion l'appareil
+        /// </summary>
+        /// <param name="parameter"></param>
+        private void ExecuteDisconnectFromDevice(object parameter)
+        {
+            Records.Add(_CurrentScore);
+            fillRecordsTab(false);
 
+            CloseConnection(true);
+        }
+        /// <summary>
+        /// Commande pour continuer la partie avec l'adversaire actuel
+        /// </summary>
+        /// <param name="parameter"></param>
+        private void ExecuteContinuGame(object parameter)
+        {
+            if (canContinuGame)
+            {
+                ResetTimer(true);
+            }
+        }
 
         public void OnNavigatedTo(object parameter)
         {
@@ -409,6 +434,9 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         public void OnNavigatingFrom(object parameter)
         {
             PeerFinder.ConnectionRequested -= PeerFinder_ConnectionRequested;
+
+            Records.Add(_CurrentScore);
+            fillRecordsTab(false);
 
             // Cleanup before we leave
             CloseConnection(false);
@@ -460,6 +488,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
 
                 _peerName = peer.DisplayName;
 
+                stopListen = false;
                 Listen();
 
                 OpponentPseudo = peer.DisplayName;
@@ -481,35 +510,37 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         {
             try
             {
-                var result = await GetResult();
-                if (result != "")
+                if (_socket != null)
                 {
-                    // Si le résultat est "init", il s'agit d'executer le Timer car l'adversaire l'a lancé
-                    if (result == "init")
+                    var result = await GetResult();
+                    if (result != "")
                     {
-                        ExecuteStartTimer("");
+                        // Si le résultat est "init", il s'agit d'executer le Timer car l'adversaire l'a lancé
+                        if (result == "init")
+                        {
+                            ExecuteStartTimer("");
+                        }
+                        else if (result == "reset")
+                        {
+                            ResetTimer(true);
+                        }
+                        else // Sinon il s'agit du choix de l'adversaire
+                        {
+                            OpponentSigleChoice = result;
+                            CalculChiFouMi();
+                            canContinuGame = true;
+                        }
                     }
-                    else if (result == "reset")
-                    {
-                        ResetTimer(true);
-                    }
-                    else if (result == "OK" || result == "Cancel")
-                    {
-                        ExecuteGetUserAnswer(result);
-                    }
-                    else // Sinon il s'agit du choix de l'adversaire
-                    {
-                        OpponentSigleChoice = result;
-                        CalculChiFouMi();
-                        canShowMessageBox = true;
-                    }
-                }
 
-                Listen();
+                    Listen();
+                }
             }
             catch (Exception ex)
             {
-                CloseConnection(true);
+                if (!stopListen)
+                {
+                    CloseConnection(true);
+                }
             }
         }
         /// <summary>
@@ -537,7 +568,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// </summary>
         /// <param name="result"></param>
         /// <param name="initTimer"></param>
-        private async void SendResult(string result, string timerState, string continu)
+        private async void SendResult(string result, string timerState)
         {
             string toSend = "";
 
@@ -545,10 +576,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             if (timerState == "init" || timerState == "reset")
             {
                 toSend = timerState;
-            }
-            else if (continu != "")
-            {
-                toSend = continu;
             }
             else if (result != null) // Envoi du choix de l'utilisateur
             {
@@ -573,8 +600,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// <param name="continueAdvertise"></param>
         private void CloseConnection(bool continueAdvertise)
         {
-            Records.Add(_CurrentScore);
-            fillRecordsTab(false);
+            stopListen = true;
 
             if (_socket != null)
             {
@@ -588,6 +614,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             {
                 // Since there is no connection, let's advertise ourselves again, so that peers can find us.
                 PeerFinder.Start();
+                OnNavigatedTo(null);
             }
             else
             {
@@ -704,7 +731,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         {
             if (parameter == null)
             {
-                SendResult("", "init", "");
+                SendResult("", "init");
             }
 
             CountDown = 3;
@@ -731,7 +758,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 isTimerVisible = Visibility.Collapsed;
                 _DispatchTimer.Stop();
                 _DispatchTimer = null;
-                SendResult(MySigleChoice, null, "");
+                SendResult(MySigleChoice, null);
             }
         }
 
@@ -743,7 +770,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         {
             if (sendResetTimer)
             {
-                SendResult("", "reset", "");
+                SendResult("", "reset");
             }
 
             CountDown = 3;
@@ -753,30 +780,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             Result = null;
             MySigleChoice = null;
             OpponentSigleChoice = null;
-        }
-
-        public void ExecuteGetUserAnswer(object parameter)
-        {
-            if (canShowMessageBox)
-	        {
-		        MessageBoxResult result = MessageBox.Show("Voulez-vous continuez la partie ?", "Revanche", MessageBoxButton.OKCancel);
-                if (result == MessageBoxResult.OK)
-                {
-                    SendResult("", "", "OK");
-                    if (parameter.ToString() == "Cancel")
-                    {
-                        CloseConnection(true);
-                        return;
-                    }
-                    ResetTimer(false);
-                }
-                else
-                {
-                    SendResult("", "", "Cancel");
-                    CloseConnection(true);
-                }
-	        }
-            canShowMessageBox = false;
         }
 
         /// <summary>
@@ -793,12 +796,12 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             {
                 Result = new BitmapImage(new Uri("/Assets/RESULT/Equality.png", UriKind.Relative));
             }
-            else if (MySigleChoice == "Chi" && OpponentSigleChoice == "Fou" || MySigleChoice == "Fou" && OpponentSigleChoice == "Mi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Chi")
+            else if (MySigleChoice == null || MySigleChoice == "Chi" && OpponentSigleChoice == "Fou" || MySigleChoice == "Fou" && OpponentSigleChoice == "Mi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Chi")
             {
                 Result = new BitmapImage(new Uri("/Assets/RESULT/Lose.png", UriKind.Relative));
                 _CurrentScore.VictoiresJoueur2++;
             }
-            else if (MySigleChoice == "Chi" && OpponentSigleChoice == "Mi" || MySigleChoice == "Fou" && OpponentSigleChoice == "Chi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Fou")
+            else if (OpponentSigleChoice == null || MySigleChoice == "Chi" && OpponentSigleChoice == "Mi" || MySigleChoice == "Fou" && OpponentSigleChoice == "Chi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Fou")
             {
                 Result = new BitmapImage(new Uri("/Assets/RESULT/Win.png", UriKind.Relative));
                 _CurrentScore.VictoiresJoueur1++;

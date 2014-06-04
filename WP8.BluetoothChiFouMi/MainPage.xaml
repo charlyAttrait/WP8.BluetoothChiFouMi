@@ -66,7 +66,7 @@
                              Visibility="{Binding isGameVisible, Mode=TwoWay}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Tap" >
-                        <i:InvokeCommandAction Command="{Binding GetUserAnswer}"/>
+                        <i:InvokeCommandAction Command="{Binding ContinuGame}"/>
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
                 <Grid>
@@ -100,8 +100,15 @@
                     <TextBlock Text="{Binding CountDown}" Grid.Row="2" Grid.ColumnSpan="5" HorizontalAlignment="Center" 
                                FontSize="250" FontWeight="Light" Foreground="Red" Visibility="{Binding isTimerVisible}"/>
 
-                    <Button Content="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.ButtonPlay}" Grid.Row="3" Grid.ColumnSpan="5" HorizontalAlignment="Stretch" 
-                            IsEnabled="{Binding isTimerEnabled}" Command="{Binding StartTimer}" />
+                    <Button Content="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.ButtonPlay}" Grid.Row="3" Grid.ColumnSpan="4" 
+                            HorizontalAlignment="Stretch" IsEnabled="{Binding isTimerEnabled}" Command="{Binding StartTimer}" />
+                    <Image Grid.Row="3" Grid.Column="5" Source="/Assets/Disconnect.png">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Tap">
+                                <i:InvokeCommandAction Command="{Binding DisconnectFromDevice}"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Image>
 
                     <Image Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Center" 
                            Source="/Assets/SIGLES/Left_Chi.png">
@@ -133,10 +140,10 @@
 
             <!--PAGE DES SCORES-->
             <phone:PivotItem Header="{Binding Source={StaticResource LocalizedStrings}, Path=LocalizedResources.RecordsPageName}">                
-                <ListBox ItemsSource="{Binding ListRecords, Mode=TwoWay}">
+                <ListBox ItemsSource="{Binding ListRecords, Mode=TwoWay}" HorizontalAlignment="Stretch">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Grid ShowGridLines="True">
+                            <Grid ShowGridLines="True" HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="35*"/>
                                     <ColumnDefinition Width="15*"/>
@@ -144,10 +151,10 @@
                                     <ColumnDefinition Width="35*"/>
                                 </Grid.ColumnDefinitions>
                                 
-                                <TextBlock Text="{Binding Joueur1}" />
-                                <TextBlock Text="{Binding VictoiresJoueur1}" />
-                                <TextBlock Text="{Binding VictoiresJoueur2}" />
-                                <TextBlock Text="{Binding Joueur2}" />
+                                <TextBlock Text="{Binding Joueur1}" HorizontalAlignment="Left" Padding="20, 0, 20, 0"/>
+                                <TextBlock Text="{Binding VictoiresJoueur1}" Grid.Column="1" HorizontalAlignment="Left" Padding="20, 0, 20, 0"/>
+                                <TextBlock Text="{Binding VictoiresJoueur2}" Grid.Column="2" HorizontalAlignment="Right" Padding="20, 0, 20, 0"/>
+                                <TextBlock Text="{Binding Joueur2}" Grid.Column="3" HorizontalAlignment="Right" Padding="20, 0, 20, 0"/>
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
