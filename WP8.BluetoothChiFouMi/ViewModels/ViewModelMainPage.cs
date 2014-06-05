@@ -262,7 +262,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                     _MySigleChoice = value;
                     onPropertyChanged();
                     MyChoice = new BitmapImage(
-                        new Uri("/Assets/SIGLES/Left_" + _MySigleChoice + ".png", UriKind.Relative));
+                    new Uri("/Assets/SIGLES/Left_" + _MySigleChoice + ".png", UriKind.Relative));
                 }
             }
         }
@@ -276,7 +276,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                     _OpponentSigleChoice = value;
                     onPropertyChanged();
                     OpponentChoice = new BitmapImage(
-                        new Uri("/Assets/SIGLES/Right_" + _OpponentSigleChoice + ".png", UriKind.Relative));
+                    new Uri("/Assets/SIGLES/Right_" + _OpponentSigleChoice + ".png", UriKind.Relative));
                 }
             }
         }
@@ -404,7 +404,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// <param name="parameter"></param>
         private void ExecuteContinuGame(object parameter)
         {
-            if (canContinuGame && OpponentSigleChoice != null)
+            if (canContinuGame)
             {
                 ResetTimer(true);
             }
@@ -523,9 +523,15 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                         }
                         else // Sinon il s'agit du choix de l'adversaire
                         {
-                            OpponentSigleChoice = result;
+                            if (result == "null")
+                            {
+                                OpponentSigleChoice = null;
+                            }
+                            else
+                            {
+                                OpponentSigleChoice = result;
+                            }
                             CalculChiFouMi();
-                            canContinuGame = true;
                         }
                     }
 
@@ -574,9 +580,13 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             {
                 toSend = timerState;
             }
-            else if (result != null) // Envoi du choix de l'utilisateur
+            else // Envoi du choix de l'utilisateur
             {
                 toSend = result;
+                if (toSend == null)
+                {
+                    toSend = "null";
+                }
             }
 
             if (_dataWriter == null)
@@ -805,20 +815,21 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 _CurrentScore = new Score(UserPseudo, OpponentPseudo, DateTime.Today);
             }
 
-            if (MyChoice == null && OpponentChoice == null || MySigleChoice == "Chi" && OpponentSigleChoice == "Chi" || MySigleChoice == "Fou" && OpponentSigleChoice == "Fou" || MySigleChoice == "Mi" && OpponentSigleChoice == "Mi")
+            if (MySigleChoice == null && OpponentSigleChoice == null || MySigleChoice == "Chi" && OpponentSigleChoice == "Chi" || MySigleChoice == "Fou" && OpponentSigleChoice == "Fou" || MySigleChoice == "Mi" && OpponentSigleChoice == "Mi")
             {
                 Result = new BitmapImage(new Uri("/Assets/RESULT/Equality.png", UriKind.Relative));
             }
-            else if (MyChoice == null && OpponentChoice != null || MySigleChoice == "Chi" && OpponentSigleChoice == "Fou" || MySigleChoice == "Fou" && OpponentSigleChoice == "Mi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Chi")
+            else if (MySigleChoice == null && OpponentSigleChoice != null || MySigleChoice == "Chi" && OpponentSigleChoice == "Fou" || MySigleChoice == "Fou" && OpponentSigleChoice == "Mi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Chi")
             {
                 Result = new BitmapImage(new Uri("/Assets/RESULT/Lose.png", UriKind.Relative));
                 _CurrentScore.VictoiresJoueur2++;
             }
-            else if (OpponentChoice == null && MyChoice != null || MySigleChoice == "Chi" && OpponentSigleChoice == "Mi" || MySigleChoice == "Fou" && OpponentSigleChoice == "Chi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Fou")
+            else if (OpponentSigleChoice == null && MySigleChoice != null || MySigleChoice == "Chi" && OpponentSigleChoice == "Mi" || MySigleChoice == "Fou" && OpponentSigleChoice == "Chi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Fou")
             {
                 Result = new BitmapImage(new Uri("/Assets/RESULT/Win.png", UriKind.Relative));
                 _CurrentScore.VictoiresJoueur1++;
             }
+            canContinuGame = true;
         }
 
         #endregion
