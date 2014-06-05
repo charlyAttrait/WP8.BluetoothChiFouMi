@@ -396,9 +396,6 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// <param name="parameter"></param>
         private void ExecuteDisconnectFromDevice(object parameter)
         {
-            Records.Add(_CurrentScore);
-            fillRecordsTab(false);
-
             CloseConnection(true);
         }
         /// <summary>
@@ -600,7 +597,21 @@ namespace WP8.BluetoothChiFouMi.ViewModels
         /// <param name="continueAdvertise"></param>
         private void CloseConnection(bool continueAdvertise)
         {
+            Records.Add(_CurrentScore);
+            fillRecordsTab(false);
+
             stopListen = true;
+
+            if (_dataReader != null)
+            {
+                _dataReader.Dispose();
+                _dataReader = null;
+            }
+            if (_dataWriter != null)
+            {
+                _dataWriter.Dispose();
+                _dataWriter = null;
+            }
 
             if (_socket != null)
             {
@@ -614,7 +625,8 @@ namespace WP8.BluetoothChiFouMi.ViewModels
             {
                 // Since there is no connection, let's advertise ourselves again, so that peers can find us.
                 PeerFinder.Start();
-                OnNavigatedTo(null);
+                _peerApps.Clear();
+                RefreshPeerAppList();
             }
             else
             {
@@ -793,16 +805,16 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                 _CurrentScore = new Score(UserPseudo, OpponentPseudo, DateTime.Today);
             }
 
-            if (MySigleChoice == "Chi" && OpponentSigleChoice == "Chi" || MySigleChoice == "Fou" && OpponentSigleChoice == "Fou" || MySigleChoice == "Mi" && OpponentSigleChoice == "Mi")
+            if (MyChoice == null && OpponentChoice == null || MySigleChoice == "Chi" && OpponentSigleChoice == "Chi" || MySigleChoice == "Fou" && OpponentSigleChoice == "Fou" || MySigleChoice == "Mi" && OpponentSigleChoice == "Mi")
             {
                 Result = new BitmapImage(new Uri("/Assets/RESULT/Equality.png", UriKind.Relative));
             }
-            else if (MySigleChoice == null || MySigleChoice == "Chi" && OpponentSigleChoice == "Fou" || MySigleChoice == "Fou" && OpponentSigleChoice == "Mi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Chi")
+            else if (MyChoice == null && OpponentChoice != null || MySigleChoice == "Chi" && OpponentSigleChoice == "Fou" || MySigleChoice == "Fou" && OpponentSigleChoice == "Mi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Chi")
             {
                 Result = new BitmapImage(new Uri("/Assets/RESULT/Lose.png", UriKind.Relative));
                 _CurrentScore.VictoiresJoueur2++;
             }
-            else if (OpponentSigleChoice == null || MySigleChoice == "Chi" && OpponentSigleChoice == "Mi" || MySigleChoice == "Fou" && OpponentSigleChoice == "Chi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Fou")
+            else if (OpponentChoice == null && MyChoice != null || MySigleChoice == "Chi" && OpponentSigleChoice == "Mi" || MySigleChoice == "Fou" && OpponentSigleChoice == "Chi" || MySigleChoice == "Mi" && OpponentSigleChoice == "Fou")
             {
                 Result = new BitmapImage(new Uri("/Assets/RESULT/Win.png", UriKind.Relative));
                 _CurrentScore.VictoiresJoueur1++;
@@ -859,6 +871,7 @@ namespace WP8.BluetoothChiFouMi.ViewModels
                             streamWriter.WriteLine(score);
                         }
                     }
+                    _CurrentScore = null;
                 }
             }
         }
